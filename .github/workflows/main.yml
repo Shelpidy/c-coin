@@ -1,0 +1,26 @@
+name: Formating and Testing
+run-name: ${{github.author}} is runnning formating and testing
+on:
+  push:
+    branch: main
+jobs:
+  format: 
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - run: npm install
+      - run: npm run format:fix
+      - run: npm run format:check
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - run: npm install
+      - run: npm run test
+    
