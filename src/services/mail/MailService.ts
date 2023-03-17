@@ -7,7 +7,6 @@ import type { SenderDetail } from './MailServiceTypes';
 
 dotenv.config();
 
-
 let mailPort: NonNullable<string> = process.env.MAIL_PORT || '465';
 
 export default class MailService {
@@ -32,8 +31,8 @@ export default class MailService {
             host: process.env.MAIL_HOST,
             port: 465,
             auth: {
-                user:process.env.MAIL_USER,
-                pass:process.env.MAIL_PASS,
+                user: process.env.MAIL_USER,
+                pass: process.env.MAIL_PASS,
             },
         } satisfies SMTPTransport.Options;
         this.transporter = nodeMailer.createTransport(transportOption);
