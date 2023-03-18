@@ -1,33 +1,42 @@
 'use strict';
-
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
     async up(queryInterface, Sequelize) {
-        /**
-         * Add altering commands here.
-         *
-         * Example:
-         * await queryInterface.createTable('users', { id: Sequelize.INTEGER });
-         */
-            await queryInterface.createTable('CommodityTransactions', {
+        await queryInterface.createTable('CommodityUsers', {
             id: {
                 allowNull: false,
                 autoIncrement: true,
-                primaryKey:true,
-                type: Sequelize.INTEGER,
+                type: Sequelize.INTEGER,  
+                primaryKey:true
             },
-            transferorAccountNumber: {
+            firstName: {
                 type: Sequelize.STRING,
             },
-            transfereeAccountNumber: {
+            middleName: {
                 type: Sequelize.STRING,
             },
-            amount: {
+            lastName: {
                 type: Sequelize.STRING,
             },
-            transactionId: {
+            password: {
                 type: Sequelize.STRING,
-                unique:true
+            },
+            pinCode: {
+                type: Sequelize.STRING,
+            },
+            gender: {
+                type: Sequelize.STRING,
+            },
+            accountNumber: {
+                type: Sequelize.STRING,
+            },
+            dob: {
+                type: Sequelize.STRING,
+            },
+            email: {
+                type: Sequelize.STRING,
+                unique:true,
+                allowNull:false
             },
             createdAt: {
                 allowNull: false,
@@ -39,16 +48,7 @@ module.exports = {
             },
         });
     },
-
-
     async down(queryInterface, Sequelize) {
-
-        /**
-         * Add reverting commands here.
-         *
-         * Example:
-         * await queryInterface.dropTable('users');
-         */
-          await queryInterface.dropTable('CommodityTransactions');
+        await queryInterface.dropTable('CommodityUsers');
     },
 };

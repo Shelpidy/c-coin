@@ -1,5 +1,5 @@
 import 'jest';
-import MailService from '../MailService';
+import MailService from '../../services/mail/MailService';
 
 describe('Testing Mail Service', () => {
     let mailService = new MailService();

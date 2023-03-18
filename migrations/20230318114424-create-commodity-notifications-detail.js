@@ -2,14 +2,15 @@
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
-    async up(queryInterface, Sequelize) {
-        /**
-         * Add altering commands here.
-         *
-         * Example:
-         * await queryInterface.createTable('users', { id: Sequelize.INTEGER });
-         */
-        await queryInterface.createTable('CommodityApiTokens', {
+  async up (queryInterface, Sequelize) {
+    /**
+     * Add altering commands here.
+     *
+     * Example:
+     * await queryInterface.createTable('users', { id: Sequelize.INTEGER });
+     */
+
+         await queryInterface.createTable('CommodityNotificationDetails', {
             id: {
                 allowNull: false,
                 autoIncrement: true,
@@ -24,13 +25,11 @@ module.exports = {
                     key:"email"
                 }
             },
-            apiToken: {
-                allowNull: false,
+            notificationToken: {
                 type: Sequelize.STRING,
             },
-            expirationDate:{
-                 allowNull: true,
-                 type: Sequelize.DATE,
+            deviceName: {
+                type: Sequelize.STRING,
             },
             createdAt: {
                 allowNull: false,
@@ -41,15 +40,16 @@ module.exports = {
                 type: Sequelize.DATE,
             },
         });
-    },
+  },
 
-    async down(queryInterface, Sequelize) {
-        /**
-         * Add reverting commands here.
-         *
-         * Example:
-         * await queryInterface.dropTable('users');
-         */
-        await queryInterface.dropTable('CommodityApiTokens');
-    },
+  async down (queryInterface, Sequelize) {
+    /**
+     * Add reverting commands here.
+     *
+     * Example:
+     * await queryInterface.dropTable('users');
+     */
+
+     await queryInterface.dropTable('CommodityNotificationDetails');
+  }
 };

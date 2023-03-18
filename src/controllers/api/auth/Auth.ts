@@ -1,12 +1,12 @@
 import express from 'express';
-import { User } from '../../../models/User';
+import { CommodityUser } from '../../../models/ComUsers';
 
 export default (router: express.Application) => {
     router.get(
         '/api/auth/',
         async (request: express.Request, response: express.Response) => {
             try {
-                let users = await User.findAll();
+                let users = await CommodityUser.findAll();
                 console.log(users);
                 response.status(200).json({
                     status: 'success',
