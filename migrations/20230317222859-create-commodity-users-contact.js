@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
@@ -9,11 +9,11 @@ module.exports = {
          * Example:
          * await queryInterface.createTable('users', { id: Sequelize.INTEGER });
          */
-          await queryInterface.createTable('CommodityUserContacts', {
+        await queryInterface.createTable("CommodityUserContacts", {
             id: {
                 allowNull: false,
                 autoIncrement: true,
-                primaryKey:true,
+                primaryKey: true,
                 type: Sequelize.INTEGER,
             },
             country: {
@@ -33,12 +33,14 @@ module.exports = {
             },
             email: {
                 type: Sequelize.STRING,
-                unique:true,
-                allowNull:false,
-                references:{
-                    model:'CommodityUsers',
-                    key:"email"
-                }
+                unique: true,
+                allowNull: false,
+                references: {
+                    model: "CommodityUsers",
+                    key: "email",
+                },
+                onDelete: "CASCADE",
+                onUpdate: "CASCADE",
             },
             createdAt: {
                 allowNull: false,
@@ -58,7 +60,6 @@ module.exports = {
          * Example:
          * await queryInterface.dropTable('users');
          */
-        await queryInterface.dropTable('CommodityUserContacts');
-
+        await queryInterface.dropTable("CommodityUserContacts");
     },
 };

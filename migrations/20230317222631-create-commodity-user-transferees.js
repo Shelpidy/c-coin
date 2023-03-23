@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
@@ -9,32 +9,37 @@ module.exports = {
          * Example:
          * await queryInterface.createTable('users', { id: Sequelize.INTEGER });
          */
-            await queryInterface.createTable('CommodityTransferees', {
+        await queryInterface.createTable("CommodityTransferees", {
             id: {
                 allowNull: false,
                 autoIncrement: true,
-                primaryKey:true,
+                primaryKey: true,
                 type: Sequelize.INTEGER,
             },
             email: {
                 type: Sequelize.STRING,
-                allowNull:false,
-                references:{
-                    model:'CommodityUsers',
-                    key:"email"
-                }
+                allowNull: false,
+                references: {
+                    model: "CommodityUsers",
+                    key: "email",
+                },
+                onDelete: "CASCADE",
+                onUpdate: "CASCADE",
             },
             transfereeEmail: {
                 type: Sequelize.STRING,
+                allowNull: false,
             },
             trsnafereeName: {
                 type: Sequelize.STRING,
             },
             trsnafereeAccountNumber: {
                 type: Sequelize.STRING,
+                allowNull: false,
             },
             trsnaferorAccountNumber: {
                 type: Sequelize.STRING,
+                allowNull: false,
             },
             createdAt: {
                 allowNull: false,
@@ -54,6 +59,6 @@ module.exports = {
          * Example:
          * await queryInterface.dropTable('users');
          */
-        await queryInterface.dropTable('CommodityTransferees');
+        await queryInterface.dropTable("CommodityTransferees");
     },
 };

@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
@@ -9,25 +9,29 @@ module.exports = {
          * Example:
          * await queryInterface.createTable('users', { id: Sequelize.INTEGER });
          */
-            await queryInterface.createTable('CommodityTransactions', {
+        await queryInterface.createTable("CommodityTransactions", {
             id: {
                 allowNull: false,
                 autoIncrement: true,
-                primaryKey:true,
+                primaryKey: true,
                 type: Sequelize.INTEGER,
             },
             transferorAccountNumber: {
                 type: Sequelize.STRING,
+                allowNull: false,
             },
             transfereeAccountNumber: {
                 type: Sequelize.STRING,
+                allowNull: false,
             },
             amount: {
                 type: Sequelize.STRING,
+                allowNull: false,
             },
             transactionId: {
                 type: Sequelize.STRING,
-                unique:true
+                unique: true,
+                allowNull: false,
             },
             createdAt: {
                 allowNull: false,
@@ -40,15 +44,13 @@ module.exports = {
         });
     },
 
-
     async down(queryInterface, Sequelize) {
-
         /**
          * Add reverting commands here.
          *
          * Example:
          * await queryInterface.dropTable('users');
          */
-          await queryInterface.dropTable('CommodityTransactions');
+        await queryInterface.dropTable("CommodityTransactions");
     },
 };

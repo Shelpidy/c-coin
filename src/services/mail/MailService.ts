@@ -1,24 +1,24 @@
-import nodeMailer from 'nodemailer';
-import dotenv from 'dotenv';
+import nodeMailer from "nodemailer";
+import dotenv from "dotenv";
 import SMTPTransport, {
     MailOptions,
-} from 'nodemailer/lib/smtp-transport/index';
-import type { SenderDetail } from './MailServiceTypes';
+} from "nodemailer/lib/smtp-transport/index";
+import type { SenderDetail } from "./MailServiceTypes";
 
 dotenv.config();
 
-let mailPort: NonNullable<string> = process.env.MAIL_PORT || '465';
+let mailPort: NonNullable<string> = process.env.MAIL_PORT || "465";
 
 export default class MailService {
     private transporter?: nodeMailer.Transporter;
     private mailOption?: MailOptions;
     public senderMail?: string;
     public constructor(
-        public senderDetail?: SenderDetail,
         public receiverMail?: string,
-        public text?: string,
         public htmlPath?: string,
-        public subject?: string
+        public subject?: string,
+        public text?: string,
+        public senderDetail?: SenderDetail
     ) {
         this.senderMail = senderDetail?.email
             ? senderDetail?.email
@@ -61,33 +61,33 @@ export default class MailService {
         return this;
     }
 
-    public async send(provider: 'mailtrap' | 'smtp') {
-        if (provider === 'smtp') {
+    public async send(provider: "mailtrap" | "smtp") {
+        if (provider === "smtp") {
             this.mailOption = {
-                to: this.receiverMail || 'ingshelpidy@gmail.com',
-                from: this.senderMail || 'teaxmarkit@gmail.com',
+                to: this.receiverMail ?? "ingshelpidy@gmail.com",
+                from: this.senderMail ?? process.env.MAIL_USER,
                 html: this.htmlPath,
-                text: this.text || 'This is email text',
-                subject: this.subject || 'My subject',
+                text: this.text,
+                subject: this.subject,
             };
             await this.config();
             this.transporter?.sendMail(this.mailOption, (err) => {
                 if (err) {
                     throw err;
                 } else {
-                    console.log('Email sent');
+                    console.log("Email sent");
                 }
             });
         } else {
             let mailTrapOption = {
-                to: [this.receiverMail || 'teaxmarkit@gmail.com'],
+                to: [this.receiverMail || "teaxmarkit@gmail.com"],
                 from: this.senderDetail || {
-                    email: 'ingshelpidy@gmail.com',
-                    name: 'Mexu',
+                    email: "ingshelpidy@gmail.com",
+                    name: "Mexu",
                 },
                 html: this.htmlPath,
-                text: this.text || 'This is email text',
-                subject: this.subject || 'My subject',
+                text: this.text || "This is email text",
+                subject: this.subject || "My subject",
             };
         }
     }

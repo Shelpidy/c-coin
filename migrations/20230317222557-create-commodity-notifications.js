@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
@@ -9,20 +9,22 @@ module.exports = {
          * Example:
          * await queryInterface.createTable('users', { id: Sequelize.INTEGER });
          */
-            await queryInterface.createTable('CommodityNotifications', {
+        await queryInterface.createTable("CommodityNotifications", {
             id: {
                 allowNull: false,
                 autoIncrement: true,
-                primaryKey:true,
+                primaryKey: true,
                 type: Sequelize.INTEGER,
             },
-             email: {
+            email: {
                 type: Sequelize.STRING,
-                allowNull:false,
-                references:{
-                    model:'CommodityUsers',
-                    key:"email"
-                }
+                allowNull: false,
+                references: {
+                    model: "CommodityUsers",
+                    key: "email",
+                },
+                onDelete: "CASCADE",
+                onUpdate: "CASCADE",
             },
             title: {
                 type: Sequelize.STRING,
@@ -34,8 +36,8 @@ module.exports = {
                 allowNull: false,
                 type: Sequelize.DATE,
             },
-            notificationType:{
-                type:Sequelize.STRING
+            notificationType: {
+                type: Sequelize.STRING,
             },
             updatedAt: {
                 allowNull: true,
@@ -51,6 +53,6 @@ module.exports = {
          * Example:
          * await queryInterface.dropTable('users');
          */
-         await queryInterface.dropTable('CommodityNotifications');
+        await queryInterface.dropTable("CommodityNotifications");
     },
 };
