@@ -30,14 +30,14 @@ module.exports = {
                 type: Sequelize.STRING,
                 allowNull: false,
             },
-            trsnafereeName: {
+            transfereeName: {
                 type: Sequelize.STRING,
             },
-            trsnafereeAccountNumber: {
+            transfereeAccountNumber: {
                 type: Sequelize.STRING,
                 allowNull: false,
             },
-            trsnaferorAccountNumber: {
+            transferorAccountNumber: {
                 type: Sequelize.STRING,
                 allowNull: false,
             },

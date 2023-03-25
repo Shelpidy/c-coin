@@ -4,13 +4,13 @@ import {
     getPhoneNumberCompany,
     responseStatus,
     responseStatusCode,
-} from "../../../utils/Utils";
+} from "../utils/Utils";
 import express from "express";
-import { CommodityUser } from "../../../models/ComUsers";
-import { CommodityUserContact } from "../../../models/ComUserContacts";
-import MailService from "../../../services/mail/MailService";
-import { CommodityBankCardDetail } from "../../../models/ComBankCardDetails";
-import { CommodityTransferee } from "../../../models/ComTransferees";
+import { CommodityUser } from "../models/ComUsers";
+import { CommodityUserContact } from "../models/ComUserContacts";
+import MailService from "../services/MailService";
+import { CommodityBankCardDetail } from "../models/ComBankCardDetails";
+import { CommodityTransferee } from "../models/ComTransferees";
 
 export default (router: express.Application) => {
     /////////////////////////////////////////////////USERS ROUTES///////////////////////////////////////////////
@@ -18,7 +18,7 @@ export default (router: express.Application) => {
     ///////// CREATE USER
 
     router.post(
-        "/api/auth/users/create/",
+        "/api/auth/users/",
         async (request: express.Request, response: express.Response) => {
             try {
                 let data = request.body;
@@ -63,6 +63,7 @@ export default (router: express.Application) => {
                 response.status(responseStatusCode.CREATED).json({
                     status: responseStatus.SUCCESS,
                     message: "User created successfully",
+                    data:{personalInfo,contactInfo}
                 });
             } catch (err) {
                 console.log(err);
@@ -137,7 +138,7 @@ export default (router: express.Application) => {
     //////////// UPDATE USER PERSONAL INFO ///////////////
 
     router.put(
-        "/api/auth/users/update/personal/",
+        "/api/auth/users/personal/",
         async (request: express.Request, response: express.Response) => {
             try {
                 let { key, value, email } = request.body;
@@ -185,7 +186,7 @@ export default (router: express.Application) => {
     //////////// UPDATE USER CONTACT INFO ////////////////////
 
     router.put(
-        "/api/auth/users/update/contact/",
+        "/api/auth/users/contact/",
         async (request: express.Request, response: express.Response) => {
             try {
                 let { key, value, email } = request.body;
@@ -254,7 +255,7 @@ export default (router: express.Application) => {
     /////////// LOGIN USER ////////////////
 
     router.post(
-        "/api/auth/users/login",
+        "/api/auth/users/login/",
         async (request: express.Request, response: express.Response) => {
             try {
                 let { password, email } = request.body;

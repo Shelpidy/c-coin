@@ -17,7 +17,7 @@ module.exports = {
                 type: Sequelize.INTEGER,
             },
             balance: {
-                type: Sequelize.STRING,
+                type: Sequelize.INTEGER,
                 allowNull: false,
                 defaultValue: "0",
             },

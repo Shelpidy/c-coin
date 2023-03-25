@@ -25,10 +25,10 @@ CommodityTransferee.init(
         trsnafereeName: {
             type: DataTypes.STRING,
         },
-        trsnafereeAccountNumber: {
+        transfereeAccountNumber: {
             type: DataTypes.STRING,
         },
-        trsnaferorAccountNumber: {
+        transferorAccountNumber: {
             type: DataTypes.STRING,
         },
         createdAt: {

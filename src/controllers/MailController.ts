@@ -1,10 +1,10 @@
 import express from "express";
-import MailService from "../../services/mail/MailService";
+import MailService from "../services/MailService";
 import fs from "node:fs";
 
 const mail = new MailService();
 
-const router = (router: express.Application) => {
+export default (router: express.Application) => {
     router.get("/api", async (req: express.Request, res: express.Response) => {
         try {
             let pathFile = String(fs.readFileSync("src/views/email.html"));
@@ -24,4 +24,4 @@ const router = (router: express.Application) => {
     });
 };
 
-export default router;
+

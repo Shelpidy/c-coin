@@ -33,7 +33,7 @@ module.exports = {
                 onUpdate: "CASCADE",
             },
             notificationToken: {
-                type: Sequelize.STRING,
+                type: Sequelize.JSON,
                 allowNull: false,
             },
             deviceName: {

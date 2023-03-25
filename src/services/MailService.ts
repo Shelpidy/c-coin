@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import SMTPTransport, {
     MailOptions,
 } from "nodemailer/lib/smtp-transport/index";
-import type { SenderDetail } from "./MailServiceTypes";
+import type { SenderDetail } from "../types/MailServiceTypes";
 
 dotenv.config();
 

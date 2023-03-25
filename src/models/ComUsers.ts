@@ -4,7 +4,7 @@ import sequelize from "../database/connection";
 export class CommodityUser extends Model {
 
     getFullname(){
-        return this.get('firstName')||"" +" "+ this.get('middleName')||"" +" "+ this.get('lastName')||""
+        return this.get('firstName') +" "+ this.get('middleName') +" "+ this.get('lastName')
     }
 }
 

@@ -12,7 +12,7 @@ Commodity.init(
             type: DataTypes.INTEGER,
         },
         balance: {
-            type: DataTypes.STRING,
+            type: DataTypes.INTEGER,
         },
         email: {
             type: DataTypes.STRING,

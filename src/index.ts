@@ -1,8 +1,11 @@
 import express from "express";
 import dotenv from "dotenv";
-import mailRouter from "./controllers/mail/MailController";
-import authRouter from "./controllers/api/auth/Auth";
 import authorizeApiAccess from "./middlewares/ApiAccess";
+import CommodityController from "./controllers/CommodityController";
+import TransactionController from "./controllers/TransactionController";
+import AuthController from "./controllers/AuthController";
+import MailController from "./controllers/MailController";
+
 dotenv.config();
 
 const PORT = process.env.PORT;
@@ -11,8 +14,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(authorizeApiAccess);
 
-authRouter(app);
-mailRouter(app);
+AuthController(app);
+MailController(app);
+CommodityController(app)
+TransactionController(app)
 
 app.get("/", (request: express.Request, response: express.Response) => {
     response.status(200).json({
