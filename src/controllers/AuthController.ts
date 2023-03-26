@@ -25,6 +25,8 @@ export default (router: express.Application) => {
                 let { personal, contact } = data;
                 let createdAt = new Date();
                 let email = personal?.email;
+                let newPersonalInfo
+                let newContactInfo
                 console.log(data);
                 console.log("Date", createdAt);
                 let personalInfo = await CommodityUser.create({
@@ -37,14 +39,14 @@ export default (router: express.Application) => {
                     email,
                 });
                 try {
-                    await personalInfo.save();
-                    await contactInfo.save();
+                    newPersonalInfo = await personalInfo.save();
+                    newContactInfo = await contactInfo.save();
                     let savePersonalData = await CommodityUser.findOne({where:{email}})
                     if(savePersonalData){
                            let accountNumber = generateAccountNumber(savePersonalData.get("id"))
                            console.log(accountNumber)
                            savePersonalData.set('accountNumber',accountNumber)
-                           await savePersonalData.save()
+                           newPersonalInfo = await savePersonalData.save()
                     }
                    
                 } catch (err) {
@@ -63,7 +65,7 @@ export default (router: express.Application) => {
                 response.status(responseStatusCode.CREATED).json({
                     status: responseStatus.SUCCESS,
                     message: "User created successfully",
-                    data:{personalInfo,contactInfo}
+                    data:{newPersonalInfo,newContactInfo}
                 });
             } catch (err) {
                 console.log(err);
@@ -200,7 +202,7 @@ export default (router: express.Application) => {
                 response.status(responseStatusCode.ACCEPTED).json({
                     status: responseStatus.SUCCESS,
                     message: `Successfuly update a user's ${key} info`,
-                    affectedRow: contactInfo,
+                    affectedRow: info,
                 });
 
                 }else{

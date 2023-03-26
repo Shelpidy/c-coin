@@ -15,9 +15,26 @@ let notification = new NotificationService()
 export default (router:express.Application)=>{
     router.post("/api/transactions/sendcommodity",async(request:express.Request,response:express.Response)=>{
         try{
-            let {transfereeAccountNumber,transferorAccountNumber,amount} = request.body
+            let {transfereeAccountNumber,transferorAccountNumber,amount:_amount} = request.body
+            let amount = Math.abs(_amount)
             let transfereeEmail = (await CommodityUser.findOne({where:{accountNumber:transfereeAccountNumber}}))?.getDataValue('email')
             let transferorEmail = (await CommodityUser.findOne({where:{accountNumber:transferorAccountNumber}}))?.getDataValue("email")
+            if(!transfereeEmail){
+                    response.status(responseStatusCode.UNPROCESSIBLE_ENTITY).json({
+                        status:responseStatus.UNPROCESSED,
+                        message:`The transferee account number ${transfereeAccountNumber} does not exist.`
+                        })
+                        return
+              }
+
+            if(!transferorEmail){
+                response.status(responseStatusCode.UNPROCESSIBLE_ENTITY).json({
+                    status:responseStatus.UNPROCESSED,
+                    message:`The transferor account number ${transferorAccountNumber} does not exist.`
+                    })
+                        return
+              }
+
             // let transfereeNotificationTokens = JSON.parse((await CommodityNotificationDetail.findOne({where:{email:transfereeAccountNumber}}))?.getDataValue("notificationToken"))
             let transfereeNotificationBody = `You have seccessfully received an amount of ${amount} from an account account ${transferorAccountNumber}`
             let transferorNotificationBody = `You have seccessfully sent an amount of ${amount} to the account number ${transfereeAccountNumber}`
@@ -49,8 +66,8 @@ export default (router:express.Application)=>{
                                  transferorNotDetailRecord = new CommodityNotification({email:transferorEmail,message:transferorNotificationBody,title:notificationTitle,createdAt})
                                  transfereeNotDetailRecord = new CommodityNotification({email:transfereeEmail,message:transfereeNotificationBody,title:notificationTitle,createdAt})
                                  
-                                 await newTransfereeBalance.save()
-                                 await newTransferorBalance.save()
+                                 let transfereeBalance = await newTransfereeBalance.save()
+                                 let transferorBalance = await newTransferorBalance.save()
                                  await transactionRecord.save()
                                  await transferorNotDetailRecord.save()
                                  await transfereeNotDetailRecord.save()
@@ -59,9 +76,10 @@ export default (router:express.Application)=>{
                                  response.status(responseStatusCode.ACCEPTED).json({
                                  status:responseStatus.SUCCESS,
                                  message:responseMessage,
-                                 data:{newTransferorBalance,newTransfereeBalance}})
-                                 return
+                                 data:{transferorBalance:{...transferorBalance.dataValues,balance:transferorBalance.getDataValue("balance") - amount},transfereeBalance:{...transfereeBalance.dataValues,balance:transfereeBalance.getDataValue("balance") + amount}}})
+                               
                             }catch(err){
+                                console.log(err)
                                 await newTransfereeBalance?.reload()
                                 await newTransfereeBalance?.reload()
                                 await transactionRecord?.reload()
@@ -92,8 +110,8 @@ export default (router:express.Application)=>{
                                  transfereeNotDetailRecord = new CommodityNotification({email:transfereeEmail,message:transfereeNotificationBody,title:"Transaction",createdAt})
                                  
 
-                                 await newTransfereeBalance.save()
-                                 await newTransferorBalance.save()
+                                 let _newTransfereeBalance = await newTransfereeBalance.save()
+                                 let _newTransferorBalance = await newTransferorBalance.save()
                                  await transactionRecord.save()
                                  await transferorNotDetailRecord.save()
                                  await transfereeNotDetailRecord.save()
@@ -102,9 +120,10 @@ export default (router:express.Application)=>{
                                 response.status(responseStatusCode.ACCEPTED).json({
                                 status:responseStatus.SUCCESS,
                                 message:responseMessage,
-                                data:{newTransferorBalance,newTransfereeBalance}})
+                                data:{transferorBalance:{..._newTransferorBalance.dataValues,balance:_newTransferorBalance.getDataValue("balance")},transfereeBalance:{..._newTransfereeBalance.dataValues,balance:_newTransfereeBalance.getDataValue("balance") + amount}}})
                                  
                             }catch(err){
+                                console.log(err)
                                 await newTransfereeBalance?.reload()
                                 await newTransfereeBalance?.reload()
                                 await transactionRecord?.reload()

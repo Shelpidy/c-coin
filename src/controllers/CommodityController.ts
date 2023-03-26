@@ -121,5 +121,33 @@ export default (router:express.Application)=>{
 
 ////////////////////////// DELETE COMMODITY ///////////////////////
 
-    
+ router.delete("/api/commodities/:email",async(request:express.Request,response:express.Response)=>{
+            try {
+                let email = request.params.email;
+                let deleteObj = await Commodity.destroy({
+                    where: { email },
+                });
+                if (deleteObj > 0) {
+                    response.status(responseStatusCode.ACCEPTED).json({
+                        status: responseStatus.SUCCESS,
+                        message: "Successfully deleted a user commodity record",
+                        deleteObj: deleteObj,
+                    });
+                } else {
+                    response.status(responseStatusCode.UNPROCESSIBLE_ENTITY).json({
+                        status: responseStatus.UNPROCESSED,
+                        message: `Failed to delete user's commodity with email ${email}`,
+                    });
+                }
+            } catch (err) {
+                console.log(err);
+                response.status(responseStatusCode.BAD_REQUEST).json({
+                    status: responseStatus.ERROR,
+                    message:err,
+                });
+            }
+        })
+
+
+
 }
