@@ -4,6 +4,7 @@ import {
     getPhoneNumberCompany,
     responseStatus,
     responseStatusCode,
+    smsConfirmationMessage,
 } from "../utils/Utils";
 import express from "express";
 import { CommodityUser } from "../models/ComUsers";
@@ -11,6 +12,7 @@ import { CommodityUserContact } from "../models/ComUserContacts";
 import MailService from "../services/MailService";
 import { CommodityBankCardDetail } from "../models/ComBankCardDetails";
 import { CommodityTransferee } from "../models/ComTransferees";
+import SMS from "../services/SMS";
 
 export default (router: express.Application) => {
     /////////////////////////////////////////////////USERS ROUTES///////////////////////////////////////////////
@@ -351,7 +353,10 @@ export default (router: express.Application) => {
         }
     );
 
-    /////////////////////////////// CHECK PASSWORD //////////////////////////
+   
+
+
+    /////////////////////////////////////// CHECK PASSWORD /////////////////////////////////
 
     router.post(
         "/api/auth/users/checkpassword/",
@@ -594,6 +599,31 @@ export default (router: express.Application) => {
                         message: `User with ${email} does not exist`,
                     });
                 }
+            } catch (err) {
+               console.log(err);
+                response.status(responseStatusCode.BAD_REQUEST).json({
+                    status: responseStatus.ERROR,
+                    message:err,
+                });
+            }
+        }
+    );
+
+     /////////////////////// CORNFIRM PHONE NUMBER BY SMS AND CONFIRMATION CODE /////////////
+
+     router.post(
+        "/api/auth/phone/confirmnumber/",
+        async (request: express.Request, response: express.Response) => {
+            try {
+                let {phoneNumber}= request.body;
+                let message:string = smsConfirmationMessage()
+                let sms = new SMS(phoneNumber,message);
+                let smsResponse = await sms.sendMessage("vonage");
+                response.status(responseStatusCode.OK).json({
+                    status: responseStatus.SUCCESS,
+                    message: "Message sent successfully",
+                    data:smsResponse
+                });
             } catch (err) {
                console.log(err);
                 response.status(responseStatusCode.BAD_REQUEST).json({

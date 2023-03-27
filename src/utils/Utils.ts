@@ -52,6 +52,13 @@ export function getIdFromAccountNumber(accountNumber: any | string) {
     // return parseInt(c);
 }
 
+export function smsConfirmationMessage(){
+    let randCode = Math.floor(Math.random() * (9999 - 1000) + 10000);
+    return `Confirmation Code:${randCode}
+Thank you for accessing Mexu Commodity Service (MCS).To confirm that you the owner of this phone number, copy the confirmation code given above and paste to the field provided.
+    `
+}
+
 export function generateEmailHTML({
     displayRandomCode,
     body,
@@ -66,19 +73,21 @@ export function generateEmailHTML({
             <meta charset="UTF-8">
             <meta http-equiv="X-UA-Compatible" content="IE=edge">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <link href="https://fonts.googleapis.com/css?family=Bungee+Inline" rel="stylesheet">
+           <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@200&display=swap" rel="stylesheet">
        
             <title>MEXU|MAIL</title>
         </head>
-        <body style="padding: 4px;font-family: serif">
+        <body style="padding: 4px;font-family: 'Poppins', sans-serif;">
             <div>
-                <h2 style="text-align: center;color:#000;opacity:0.7">Email Confirmation</h2>
-                <div style="background-color:#000;height: 300px;padding: 8px;">
-                    <h3 style="color:white;text-align: center;">MEXU | commodity</h3>
-                    <p style='text-align:center; font-family:serif;color:white;letter-spacing:2px;' >
-                        Thank you for accessing Mexu Commodity.To confirm that you are owner of this email,use to confirmation code below to continue validating your account.
+                <h2 style="text-align: center;color:#18246b;">Email Confirmation</h2>
+                <div style="height: 300px;">
+                    <h3 style="text-align: center;font-family: 'Poppins', sans-serif;color:#18246b;font-weight:bold;font-size:16px;">Mexu Commodity Service (MCS)</h3>
+                    <p style='text-align:center;font-family: "Poppins", sans-serif;color:#182444;letter-spacing:2px;font-size:16px;' >
+                        Thank you for accessing Mexu Commodity Service.To confirm that you are owner of this email,use to confirmation code below to continue validating your account.
                     </p>
-                    <h1 style="color:white;text-align:center;letter-spacing:4px;">${randCode}</h1>     
+                    <h1 style="color:#18246b;text-align:center;letter-spacing:4px;">${randCode}</h1>     
                 </div>
             </div>    
         </body>

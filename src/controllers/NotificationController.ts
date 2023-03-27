@@ -1,113 +1,21 @@
 import express from "express"
 import { Commodity } from "../models/Commodities"
+import { CommodityNotification } from "../models/ComNotifications"
 import { responseStatus,responseStatusCode } from "../utils/Utils"
 
 export default (router:express.Application)=>{
 
-    router.post("/api/notifications/",async(request:express.Request,response:express.Response)=>{
-        try{
-             let commodity = request.body
-             let createdAt = new Date()
-             let createdCommodity = await Commodity.create({...commodity,createdAt})
-             if(createdCommodity){
-                response.status(responseStatusCode.CREATED).json({
-                    status:responseStatus.SUCCESS,
-                    message:`You have successfully added an amout of ${commodity?.balance} to the user's account ${commodity?.email}`,
-                    data:createdCommodity
-                })
-             }else{
-                 response.status(responseStatusCode.UNPROCESSIBLE_ENTITY)
-                .json({
-                    status: responseStatus.UNPROCESSED,
-                    message: "Failed to create a user",
-                });
-             }
-
-        }catch(err){
-            console.log(err);
-            response.status(responseStatusCode.BAD_REQUEST)
-                .json({
-                    status: responseStatus.ERROR,
-                    message: err,
-                });
-        }
-       
-    })
-
-    ////////////////////// CHECK BALANCE /////////////////////////
-
-    router.get("/api/notifications/checkbalance/:email",async(request:express.Request,response:express.Response)=>{
-        try{
-            let email = request.params.email
-            let commodity = await Commodity.findOne({where:{email}})
-
-            if(commodity){
-                response.status(responseStatusCode.OK).json({
-                    status:responseStatus.SUCCESS,
-                    balance:commodity?.getDataValue('balance')
-                })
-            }else{
-                  response.status(responseStatusCode.NOT_FOUND).json({
-                    status:responseStatus.ERROR,
-                    balance:'C 0.00'
-                })
-
-            }
-
-        }catch(err){
-            console.log(err);
-            response.status(responseStatusCode.BAD_REQUEST)
-                .json({
-                    status: responseStatus.ERROR,
-                    message: err,
-                });
-
-        }
-
-    })
-
-    /////////////////// GET COMMODITY  //////////////////////////
-
+    /////////////////// GET NOTIFICATIONS BY EMAIL //////////////////////////
     
     router.get("/api/notifications/:email",async(request:express.Request,response:express.Response)=>{
         try{
             let email = request.params.email
-            let commodity = await Commodity.findOne({where:{email}})
-
-            if(commodity){
-                response.status(responseStatusCode.OK).json({
-                    status:responseStatus.SUCCESS,
-                    data:commodity
-                })
-            }else{
-                  response.status(responseStatusCode.NOT_FOUND).json({
-                    status:responseStatus.ERROR,
-                    data:commodity
-                })
-            }
-
-        }catch(err){
-            console.log(err);
-            response.status(responseStatusCode.BAD_REQUEST)
-                .json({
-                    status: responseStatus.ERROR,
-                    message: err,
-                });
-        }
-
-    })
-
-
-    //////////////////////// GET ALL COMMODITIES ///////////////////////////////////
-
-     router.get("/api/notifications/",async(request:express.Request,response:express.Response)=>{
-        try{
-            let notifications = await Commodity.findAll()
-                response.status(responseStatusCode.OK).json({
+            let notifications = await CommodityNotification.findAll({where:{email}})
+             response.status(responseStatusCode.OK).json({
                     status:responseStatus.SUCCESS,
                     data:notifications
                 })
-         
+
         }catch(err){
             console.log(err);
             response.status(responseStatusCode.BAD_REQUEST)
@@ -119,24 +27,44 @@ export default (router:express.Application)=>{
 
     })
 
-////////////////////////// DELETE COMMODITY ///////////////////////
+    //////////////////////// GET ALL NOTIFICATIONS ///////////////////////////////////
+   
+    router.get("/api/notifications/",async(request:express.Request,response:express.Response)=>{
+        try{
+            let notifications = await CommodityNotification.findAll()
+             response.status(responseStatusCode.OK).json({
+                    status:responseStatus.SUCCESS,
+                    data:notifications
+                })
 
- router.delete("/api/notifications/:email",async(request:express.Request,response:express.Response)=>{
+        }catch(err){
+            console.log(err);
+            response.status(responseStatusCode.BAD_REQUEST)
+                .json({
+                    status: responseStatus.ERROR,
+                    message: err,
+                });
+        }
+
+    })
+////////////////////////// DELETE A NOTIFICATION ///////////////////////
+
+ router.delete("/api/notifications/:id",async(request:express.Request,response:express.Response)=>{
             try {
-                let email = request.params.email;
-                let deleteObj = await Commodity.destroy({
-                    where: { email },
+                let id = request.params.id;
+                let deleteObj = await CommodityNotification.destroy({
+                    where: { id },
                 });
                 if (deleteObj > 0) {
                     response.status(responseStatusCode.ACCEPTED).json({
                         status: responseStatus.SUCCESS,
-                        message: "Successfully deleted a user commodity record",
+                        message: "Successfully deleted a notification record",
                         deleteObj: deleteObj,
                     });
                 } else {
                     response.status(responseStatusCode.UNPROCESSIBLE_ENTITY).json({
                         status: responseStatus.UNPROCESSED,
-                        message: `Failed to delete user's commodity with email ${email}`,
+                        message: `Failed to delete notification with Id ${id}`,
                     });
                 }
             } catch (err) {
@@ -148,6 +76,33 @@ export default (router:express.Application)=>{
             }
         })
 
+/////////////////////// DELETE USER NOTIFICATIONS //////////////////////
 
+ router.delete("/api/notifications/del/:email",async(request:express.Request,response:express.Response)=>{
+            try {
+                let email = request.params.email;
+                let deleteObj = await CommodityNotification.destroy({
+                    where: { email },
+                });
+                if (deleteObj > 0) {
+                    response.status(responseStatusCode.ACCEPTED).json({
+                        status: responseStatus.SUCCESS,
+                        message: "Successfully deleted a user notification records",
+                        deleteObj: deleteObj,
+                    });
+                } else {
+                    response.status(responseStatusCode.UNPROCESSIBLE_ENTITY).json({
+                        status: responseStatus.UNPROCESSED,
+                        message: `Failed to delete user notifications with email ${email}`,
+                    });
+                }
+            } catch (err) {
+                console.log(err);
+                response.status(responseStatusCode.BAD_REQUEST).json({
+                    status: responseStatus.ERROR,
+                    message:err,
+                });
+            }
+        })
 
 }

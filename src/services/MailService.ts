@@ -81,8 +81,8 @@ export default class MailService {
         } else {
             let mailTrapOption = {
                 to: [this.receiverMail || "teaxmarkit@gmail.com"],
-                from: this.senderDetail || {
-                    email: "ingshelpidy@gmail.com",
+                from:{
+                    email: this.senderDetail || "ingshelpidy@gmail.com",
                     name: "Mexu",
                 },
                 html: this.htmlPath,

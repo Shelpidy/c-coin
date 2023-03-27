@@ -5,6 +5,7 @@ import CommodityController from "./controllers/CommodityController";
 import TransactionController from "./controllers/TransactionController";
 import AuthController from "./controllers/AuthController";
 import MailController from "./controllers/MailController";
+import NotificationController from "./controllers/NotificationController";
 
 dotenv.config();
 
@@ -18,6 +19,7 @@ AuthController(app);
 MailController(app);
 CommodityController(app)
 TransactionController(app)
+NotificationController(app)
 
 app.get("/", (request: express.Request, response: express.Response) => {
     response.status(200).json({

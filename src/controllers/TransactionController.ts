@@ -171,4 +171,115 @@ export default (router:express.Application)=>{
 
     })
 
+        //////////////////////// GET ALL TRANSACTIONS ///////////////////////////////////
+   
+    router.get("/api/transactions/",async(request:express.Request,response:express.Response)=>{
+        try{
+            let transactions = await CommodityTransaction.findAll()
+             response.status(responseStatusCode.OK).json({
+                    status:responseStatus.SUCCESS,
+                    data:transactions
+                })
+
+        }catch(err){
+            console.log(err);
+            response.status(responseStatusCode.BAD_REQUEST)
+                .json({
+                    status: responseStatus.ERROR,
+                    message: err,
+                });
+        }
+
+    })
+
+
+       /////////////////// GET TRANSACTIONS BY EMAIL //////////////////////////
+    
+    router.get("/api/transactions/:email",async(request:express.Request,response:express.Response)=>{
+        try{
+            let email = request.params.email
+            let accNumber = (await CommodityUser.findOne({where:{email}}))?.getDataValue("accountNumber")
+            let trans = await CommodityTransaction.findAll({where:{transfereeAccountNumber:accNumber}})
+            let receive = await CommodityTransaction.findAll({where:{transferorAccountNumber:accNumber}})
+            let transactions = [...trans,...receive]
+             response.status(responseStatusCode.OK).json({
+                    status:responseStatus.SUCCESS,
+                    data:transactions
+                })
+
+        }catch(err){
+            console.log(err);
+            response.status(responseStatusCode.BAD_REQUEST)
+                .json({
+                    status: responseStatus.ERROR,
+                    message: err,
+                });
+        }
+
+    })
+
+////////////////////////// DELETE A TRANSACTION HISTORY ///////////////////////
+
+ router.delete("/api/transactions/:id",async(request:express.Request,response:express.Response)=>{
+            try {
+                let id = request.params.id;
+                let deleteObj = await CommodityTransaction.destroy({
+                    where: { id },
+                });
+                if (deleteObj > 0) {
+                    response.status(responseStatusCode.ACCEPTED).json({
+                        status: responseStatus.SUCCESS,
+                        message: "Successfully deleted a transaction record",
+                        deleteObj: deleteObj,
+                    });
+                } else {
+                    response.status(responseStatusCode.UNPROCESSIBLE_ENTITY).json({
+                        status: responseStatus.UNPROCESSED,
+                        message: `Failed to delete transaction with Id ${id}`,
+                    });
+                }
+            } catch (err) {
+                console.log(err);
+                response.status(responseStatusCode.BAD_REQUEST).json({
+                    status: responseStatus.ERROR,
+                    message:err,
+                });
+            }
+        })
+
+/////////////////////////////// DELETE USER TRANSACTIONS //////////////////////
+
+ router.delete("/api/transactions/del/:email",async(request:express.Request,response:express.Response)=>{
+            try {
+                let email = request.params.email;
+                let deleteObj = await CommodityTransaction.destroy({
+                    where: { email },
+                });
+                if (deleteObj > 0) {
+                    response.status(responseStatusCode.ACCEPTED).json({
+                        status: responseStatus.SUCCESS,
+                        message: "Successfully deleted a user transaction records",
+                        deleteObj: deleteObj,
+                    });
+                } else {
+                    response.status(responseStatusCode.UNPROCESSIBLE_ENTITY).json({
+                        status: responseStatus.UNPROCESSED,
+                        message: `Failed to delete user transactions with email ${email}`,
+                    });
+                }
+            } catch (err) {
+                console.log(err);
+                response.status(responseStatusCode.BAD_REQUEST).json({
+                    status: responseStatus.ERROR,
+                    message:err,
+                });
+            }
+        })
+
+
+
+
+
 }
+
+
