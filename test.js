@@ -1,8 +1,8 @@
-const uuid = require("uuid");
+// const uuid = require("uuid");
 
-let { v1, v2, v3, v4 } = uuid;
+// let { v1, v2, v3, v4 } = uuid;
 
-console.log({ v1: v1(), v3: v3(), v4: v4() });
+// console.log({ v1: v1(), v3: v3(), v4: v4() });
 
 // const { Vonage } = require('@vonage/server-sdk')
 
