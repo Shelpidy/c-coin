@@ -32,8 +32,8 @@ module.exports = {
             },
             accountNumber: {
                 type: Sequelize.STRING,
-                allowNull: false,
-                unique:true
+                allowNull: true,
+                unique: true,
             },
             dob: {
                 type: Sequelize.STRING,

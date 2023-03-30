@@ -1,0 +1,12 @@
+export PORT = 5000
+export MAIL_PORT = 465
+export MAIL_HOST = smtp.mail.yahoo.com
+export MAIL_USER = mexu.sl@yahoo.com
+export MAIL_PASS = rdooytekacavmmnn
+export PG_DB_PASSWORD=Mexu2023
+export PG_DB_USERNAME=mexu
+export PG_DB_HOST=commodity.ccn2o7dzia1z.us-east-1.rds.amazonaws.com
+export PG_DB_NAME=commoditydb
+export API_ACCESS_KEY=mexu2023medishk2
+export SMS_API_KEY=9d035dbc
+export SMS_SECRET_KEY=fUr53lsNeWpUL1iV

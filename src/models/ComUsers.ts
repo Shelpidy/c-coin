@@ -2,9 +2,14 @@ import { Model, DataTypes } from "sequelize";
 import sequelize from "../database/connection";
 
 export class CommodityUser extends Model {
-
-    getFullname(){
-        return this.get('firstName') +" "+ this.get('middleName') +" "+ this.get('lastName')
+    getFullname() {
+        return (
+            this.get("firstName") +
+            " " +
+            this.get("middleName") +
+            " " +
+            this.get("lastName")
+        );
     }
 }
 
@@ -40,7 +45,7 @@ CommodityUser.init(
         },
         accountNumber: {
             type: DataTypes.STRING,
-            unique:true
+            unique: true,
         },
         dob: {
             type: DataTypes.STRING,

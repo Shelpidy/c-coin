@@ -4,7 +4,7 @@ import authorizeApiAccess from "./middlewares/ApiAccess";
 import CommodityController from "./controllers/CommodityController";
 import TransactionController from "./controllers/TransactionController";
 import AuthController from "./controllers/AuthController";
-import MailController from "./controllers/MailController";
+// import MailController from "./controllers/MailController";
 import NotificationController from "./controllers/NotificationController";
 
 dotenv.config();
@@ -16,10 +16,10 @@ app.use(express.urlencoded({ extended: false }));
 app.use(authorizeApiAccess);
 
 AuthController(app);
-MailController(app);
-CommodityController(app)
-TransactionController(app)
-NotificationController(app)
+// MailController(app);
+CommodityController(app);
+TransactionController(app);
+NotificationController(app);
 
 app.get("/", (request: express.Request, response: express.Response) => {
     response.status(200).json({

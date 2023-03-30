@@ -1,6 +1,6 @@
 import type { EmailParameter } from "./Utils.d";
 
-export function generateAccountNumber(id: string | any) {
+export async function generateAccountNumber(id: string | any) {
     let numOfDigit: number = String(id).length;
     if (numOfDigit === 2) {
         return numOfDigit.toString() + "COM" + (id * 100000000).toString();
@@ -25,7 +25,7 @@ export function generateAccountNumber(id: string | any) {
     }
 }
 
-export function getIdFromAccountNumber(accountNumber: any | string) {
+export async function getIdFromAccountNumber(accountNumber: any | string) {
     let c = accountNumber.split("COM")[1];
     let numOfDigit: number = parseInt(accountNumber.split("COM")[0]);
     if (numOfDigit === 2) {
@@ -52,14 +52,17 @@ export function getIdFromAccountNumber(accountNumber: any | string) {
     // return parseInt(c);
 }
 
-export function smsConfirmationMessage(){
+export async function smsConfirmationMessage() {
     let randCode = Math.floor(Math.random() * (9999 - 1000) + 10000);
-    return `Confirmation Code:${randCode}
+    return {
+        message: `Confirmation Code:${randCode}
 Thank you for accessing Mexu Commodity Service (MCS).To confirm that you the owner of this phone number, copy the confirmation code given above and paste to the field provided.
-    `
+    `,
+        code: randCode,
+    };
 }
 
-export function generateEmailHTML({
+export async function generateEmailHTML({
     displayRandomCode,
     body,
     heading,
@@ -67,7 +70,8 @@ export function generateEmailHTML({
 }: EmailParameter) {
     let randCode = Math.floor(Math.random() * (99999 - 10000) + 100000);
     if (displayRandomCode) {
-        return `<!DOCTYPE html>
+        return {
+            htmlPath: `<!DOCTYPE html>
         <html lang="en">
         <head>
             <meta charset="UTF-8">
@@ -91,9 +95,12 @@ export function generateEmailHTML({
                 </div>
             </div>    
         </body>
-        </html>`;
+        </html>`,
+            code: randCode,
+        };
     } else {
-        return `<!DOCTYPE html>
+        return {
+            htmlPath: `<!DOCTYPE html>
         <html lang="en">
         <head>
             <meta charset="UTF-8">
@@ -114,7 +121,9 @@ export function generateEmailHTML({
                 </div>
             </div>    
         </body>
-        </html>`;
+        </html>`,
+            code: null,
+        };
     }
 }
 
