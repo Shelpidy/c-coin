@@ -20,10 +20,14 @@ CommodityNotificationDetail.init(
             },
         },
         notificationToken: {
-            type: DataTypes.JSON,
+            type: DataTypes.STRING,
         },
         deviceName: {
             type: DataTypes.STRING,
+        },
+        deviceId: {
+            type: DataTypes.STRING,
+            unique:true
         },
         createdAt: {
             allowNull: false,

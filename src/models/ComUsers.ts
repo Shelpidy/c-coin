@@ -2,7 +2,7 @@ import { Model, DataTypes } from "sequelize";
 import sequelize from "../database/connection";
 
 export class CommodityUser extends Model {
-    getFullname() {
+    public getFullname() {
         return (
             this.get("firstName") +
             " " +

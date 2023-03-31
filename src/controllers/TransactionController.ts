@@ -2,11 +2,12 @@ import express from "express";
 import { Commodity } from "../models/Commodities";
 import { CommodityTransaction } from "../models/ComTransactions";
 import { CommodityUser } from "../models/ComUsers";
-import { responseStatus, responseStatusCode } from "../utils/Utils";
+import { getPhoneNumberCompany, responseStatus, responseStatusCode } from "../utils/Utils";
 import { v4 } from "uuid";
 import { CommodityNotificationDetail } from "../models/ComNotificationDetails";
 import { CommodityNotification } from "../models/ComNotifications";
 import NotificationService from "../services/NotificationService";
+import { compareSync } from "bcrypt";
 
 let notification = new NotificationService();
 
@@ -377,32 +378,51 @@ export default (router: express.Application) => {
         }
     );
 
-    /////////////////////////////// DELETE USER TRANSACTIONS //////////////////////
 
-    //  router.delete("/api/transactions/del/:email",async(request:express.Request,response:express.Response)=>{
-    //             try {
-    //                 let email = request.params.email;
-    //                 let deleteObj = await CommodityTransaction.destroy({
-    //                     where: { email },
-    //                 });
-    //                 if (deleteObj > 0) {
-    //                     response.status(responseStatusCode.ACCEPTED).json({
-    //                         status: responseStatus.SUCCESS,
-    //                         message: "Successfully deleted a user transaction records",
-    //                         deleteObj: deleteObj,
-    //                     });
-    //                 } else {
-    //                     response.status(responseStatusCode.UNPROCESSIBLE_ENTITY).json({
-    //                         status: responseStatus.UNPROCESSED,
-    //                         message: `Failed to delete user transactions with email ${email}`,
-    //                     });
-    //                 }
-    //             } catch (err) {
-    //                 console.log(err);
-    //                 response.status(responseStatusCode.BAD_REQUEST).json({
-    //                     status: responseStatus.ERROR,
-    //                     data:err,
-    //                 });
-    //             }
-    //         })
+    ////////////////////////////////////// BUY COMMODITY WITH ORANGE MONEY,AFRICELL MONEY OR QMONEY //////////////////
+
+    router.post("/api/transactions/buycommodity/",async(request:express.Request,response:express.Response)=>{
+        try{
+            let {phoneNumber,email,amount} = request.body
+            let phoneNumberCompany = await getPhoneNumberCompany(phoneNumber)
+            if(phoneNumberCompany == 'africell'){
+
+                // 1. CONTACT COMPANY AND BUY COMMODITY
+                // 2. COMMODITY BALANCE UPDATED
+
+                response.status(responseStatusCode.ACCEPTED).json({
+                    status:responseStatus.SUCCESS,
+                    message:phoneNumberCompany
+                }) }
+            else if(phoneNumberCompany == "qcell"){
+                response.status(responseStatusCode.ACCEPTED).json({
+                    status:responseStatus.SUCCESS,
+                    message:phoneNumberCompany
+                }) 
+            } else{
+                 response.status(responseStatusCode.ACCEPTED).json({
+                    status:responseStatus.SUCCESS,
+                    message:phoneNumberCompany
+                }) 
+            }
+            }catch(err){
+                console.log(err);
+                response.status(responseStatusCode.BAD_REQUEST).json({
+                    status: responseStatus.ERROR,
+                    data: err,
+                });
+
+        }
+
+    })
+
+
+
+    /////////////////////////////////////////// BUY COMMODITY WITH BANK CARD ///////////////////////////////////
+
+    router.post("api/transactions/buy",async(request:express.Request,response:express.Response)=>{
+
+
+    })
+    
 };
