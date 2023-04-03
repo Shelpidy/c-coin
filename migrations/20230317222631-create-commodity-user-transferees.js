@@ -16,19 +16,25 @@ module.exports = {
                 primaryKey: true,
                 type: Sequelize.INTEGER,
             },
-            email: {
-                type: Sequelize.STRING,
+           transferorId: {
+                type: Sequelize.INTEGER,
                 allowNull: false,
                 references: {
                     model: "CommodityUsers",
-                    key: "email",
+                    key: "id",
                 },
                 onDelete: "CASCADE",
                 onUpdate: "CASCADE",
             },
-            transfereeEmail: {
-                type: Sequelize.STRING,
+            transfereeId: {
+                type: Sequelize.INTEGER,
                 allowNull: false,
+                references: {
+                    model: "CommodityUsers",
+                    key: "id",
+                },
+                onDelete: "CASCADE",
+                onUpdate: "CASCADE",
             },
             transfereeName: {
                 type: Sequelize.STRING,
@@ -36,10 +42,22 @@ module.exports = {
             transfereeAccountNumber: {
                 type: Sequelize.STRING,
                 allowNull: false,
+                references:{
+                    model:"CommodityUsers",
+                    key:"accountNumber"
+                },
+                onDelete:"CASCADE",
+                onUpdate:"CASCADE"
             },
             transferorAccountNumber: {
                 type: Sequelize.STRING,
                 allowNull: false,
+                 references:{
+                    model:"CommodityUsers",
+                    key:"accountNumber"
+                },
+                onDelete:"CASCADE",
+                onUpdate:"CASCADE"
             },
             createdAt: {
                 allowNull: false,

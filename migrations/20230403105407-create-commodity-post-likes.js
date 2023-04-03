@@ -1,29 +1,27 @@
 "use strict";
-
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
     async up(queryInterface, Sequelize) {
-        /**
-         * Add altering commands here.
-         *
-         * Example:
-         * await queryInterface.createTable('users', { id: Sequelize.INTEGER });
-         */
-        await queryInterface.createTable("Commodities", {
+        await queryInterface.createTable("CommodityPostLikes", {
             id: {
                 allowNull: false,
                 autoIncrement: true,
+                type: Sequelize.INTEGER,
                 primaryKey: true,
-                type: Sequelize.INTEGER,
             },
-            balance: {
+            postId: {
                 type: Sequelize.INTEGER,
+                unique: true,
+                references: {
+                    model: "CommodityPosts",
+                    key: "id",
+                },
                 allowNull: false,
-                defaultValue: "0",
+                onDelete: "CASCADE",
+                onUpdate: "CASCADE",
             },
             userId: {
                 type: Sequelize.INTEGER,
-                unique: true,
                 references: {
                     model: "CommodityUsers",
                     key: "id",
@@ -32,6 +30,7 @@ module.exports = {
                 onDelete: "CASCADE",
                 onUpdate: "CASCADE",
             },
+            
             createdAt: {
                 allowNull: false,
                 type: Sequelize.DATE,
@@ -42,14 +41,7 @@ module.exports = {
             },
         });
     },
-
     async down(queryInterface, Sequelize) {
-        /**
-         * Add reverting commands here.
-         *
-         * Example:
-         * await queryInterface.dropTable('users');
-         */
-        await queryInterface.dropTable("Commodities");
+        await queryInterface.dropTable("CommodityPostLikes");
     },
 };

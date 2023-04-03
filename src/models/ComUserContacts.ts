@@ -26,13 +26,13 @@ CommodityUserContact.init(
         phoneNumbers: {
             type: DataTypes.JSON,
         },
-        email: {
-            type: DataTypes.STRING,
+        userId: {
+            type: DataTypes.INTEGER,
             unique: true,
             allowNull: false,
             references: {
                 model: "CommodityUsers",
-                key: "email",
+                key: "id",
             },
         },
         createdAt: {

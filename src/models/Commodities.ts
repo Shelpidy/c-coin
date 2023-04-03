@@ -14,12 +14,12 @@ Commodity.init(
         balance: {
             type: DataTypes.INTEGER,
         },
-        email: {
-            type: DataTypes.STRING,
+        userId: {
+            type: DataTypes.INTEGER,
             unique: true,
             references: {
                 model: "CommodityUsers",
-                key: "email",
+                key: "id",
             },
         },
         createdAt: {

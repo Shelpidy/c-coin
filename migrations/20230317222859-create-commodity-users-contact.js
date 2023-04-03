@@ -31,13 +31,13 @@ module.exports = {
             phoneNumbers: {
                 type: Sequelize.JSON,
             },
-            email: {
-                type: Sequelize.STRING,
+            userId: {
+                type: Sequelize.INTEGER,
                 unique: true,
                 allowNull: false,
                 references: {
                     model: "CommodityUsers",
-                    key: "email",
+                    key: "id",
                 },
                 onDelete: "CASCADE",
                 onUpdate: "CASCADE",

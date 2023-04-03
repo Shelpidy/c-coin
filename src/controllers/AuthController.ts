@@ -31,7 +31,7 @@ export default (router: express.Application) => {
                 let data = request.body;
                 let { personal, contact } = data;
                 let createdAt = new Date();
-                let email = personal?.email;
+                let email = personal?.email
                 let password = await hashData(personal.password)
                 let pinCode = await hashData(personal.pinCode)
                 let newPersonalInfo
@@ -48,7 +48,7 @@ export default (router: express.Application) => {
                 let contactInfo = await CommodityUserContact.create({
                     ...contact,
                     createdAt,
-                    email,
+                    userId:personalInfo.getDataValue("id"),
                 });
                 try {
                     newPersonalInfo = await personalInfo.save();
@@ -110,23 +110,23 @@ export default (router: express.Application) => {
         }
     );
 
-    /// GET ONE USER ,BY EMAIL, DETAILS, INCLUDING PERSONAL AND CONTACT
+    /// GET ONE USER ,BY ID, DETAILS, INCLUDING PERSONAL AND CONTACT
 
     router.get(
-        "/api/auth/users/:email",
+        "/api/auth/users/:userId",
         async (request: express.Request, response: express.Response) => {
             try {
-                let email: string = request.params?.email;
+                let id: string = request.params?.userId;
                 let personal = await CommodityUser.findOne({
-                    where: { email },
+                    where: { id },
                 });
                 let contact = await CommodityUserContact.findOne({
-                    where: { email },
+                    where: { id },
                 });
                 if (!personal) {
                     response.status(responseStatusCode.NOT_FOUND).json({
                         status: responseStatus.ERROR,
-                        message: `User with ${email} does not exists.`,
+                        message: `User with ${id} does not exists.`,
                     });
                     return;
                 }
@@ -154,9 +154,9 @@ export default (router: express.Application) => {
         "/api/auth/users/personal/",
         async (request: express.Request, response: express.Response) => {
             try {
-                let { key, value, email } = request.body;
+                let { key, value, userId:id } = request.body;
                 let personalInfo = await CommodityUser.findOne({
-                    where: { email },
+                    where: { id },
                 });
                 if(personalInfo){
                      if (key === "password") {
@@ -182,7 +182,7 @@ export default (router: express.Application) => {
                 }else{
                      response.status(responseStatusCode.UNPROCESSIBLE_ENTITY).json({
                         status: responseStatus.UNPROCESSED,
-                        message: `User's account with email ${email} does not exist`,
+                        message: `User's account with Id ${id} does not exist`,
                     });
                 }
                
@@ -202,9 +202,9 @@ export default (router: express.Application) => {
         "/api/auth/users/contact/",
         async (request: express.Request, response: express.Response) => {
             try {
-                let { key, value, email } = request.body;
+                let { key, value, userId } = request.body;
                 let contactInfo = await CommodityUserContact.findOne({
-                    where: { email },
+                    where: { userId },
                 });
                 if(contactInfo){
                 contactInfo?.set(key, value);
@@ -219,7 +219,7 @@ export default (router: express.Application) => {
                 }else{
                         response.status(responseStatusCode.UNPROCESSIBLE_ENTITY).json({
                         status: responseStatus.UNPROCESSED,
-                        message: `User's contact information with email ${email} does not exist`,
+                        message: `User's contact information with userId ${userId} does not exist`,
                     });
                 }
                
@@ -236,12 +236,12 @@ export default (router: express.Application) => {
     ////////////  DELETE USER AND CASCADING PERSONAL INFORMATION ////////////
 
     router.delete(
-        "/api/auth/users/:email",
+        "/api/auth/users/:userId",
         async (request: express.Request, response: express.Response) => {
             try {
-                let email = request.params.email;
+                let id = request.params.userId;
                 let deleteObj = await CommodityUser.destroy({
-                    where: { email },
+                    where: { id },
                 });
                 if (deleteObj > 0) {
                     response.status(responseStatusCode.ACCEPTED).json({
@@ -251,7 +251,7 @@ export default (router: express.Application) => {
                 } else {
                     response.status(responseStatusCode.UNPROCESSIBLE_ENTITY).json({
                         status: responseStatus.UNPROCESSED,
-                        message: `User's account with ${email} does not exist`,
+                        message: `User's account with ${id} does not exist`,
                     });
                 }
             } catch (err) {
@@ -280,7 +280,7 @@ export default (router: express.Application) => {
                     let isMatch = await matchWithHashedData(password,hashedPassword)
                     if (isMatch) {
                         let notificationObject = {
-                            email:email,
+                            userId:userInfo.getDataValue("id"),
                             deviceId:deviceId,
                             deviceName:deviceName,
                             createdAt: new Date(),
@@ -288,7 +288,7 @@ export default (router: express.Application) => {
                         }
                         let createdObject = await CommodityNotificationDetail.create(notificationObject)
                         console.log(userInfo);
-                        let loginToken = await jwtEncode({id:userInfo.getDataValue("id"),email:userInfo.getDataValue("email"),accountNumber:userInfo.getDataValue("accountNumber"),deviceId:createdObject.getDataValue("deviceId")})
+                        let loginToken = await jwtEncode({userId:userInfo.getDataValue("id"),email:userInfo.getDataValue("email"),accountNumber:userInfo.getDataValue("accountNumber"),deviceId:createdObject.getDataValue("deviceId")})
                         response.status(responseStatusCode.OK).json({
                             status: responseStatus.SUCCESS,
                             message: `Login successfully`,
@@ -323,9 +323,9 @@ export default (router: express.Application) => {
         "/api/auth/users/logout/",
         async (request: express.Request, response: express.Response) => {
             try {
-                let {email,deviceId} = request.body;
+                let {userId,deviceId} = request.body;
                 let deletedObj = await CommodityNotificationDetail.destroy({
-                    where: { email,deviceId},
+                    where: { userId,deviceId},
                 });
                 if (deletedObj > 0) {
                     response.status(responseStatusCode.ACCEPTED).json({
@@ -335,7 +335,7 @@ export default (router: express.Application) => {
                 } else {
                     response.status(responseStatusCode.NOT_FOUND).json({
                         status: responseStatus.ERROR,
-                        message: "Failed to lgout user. Ensure that the email you used exists.",
+                        message: "Failed to lgout user. Ensure that the userId you used exists.",
                     });
                 }
             } catch (err) {
@@ -352,7 +352,7 @@ export default (router: express.Application) => {
     //////////////////////////////////////// CHECK EMAIL //////////////////////////////////
 
     router.get(
-        "/api/auth/users/checkemail/:email",
+        "/api/auth/users/checkuserId/:email",
         async (request: express.Request, response: express.Response) => {
             try {
                 let email: string = request.params?.email;
@@ -419,9 +419,9 @@ export default (router: express.Application) => {
         "/api/auth/users/checkpassword/",
         async (request: express.Request, response: express.Response) => {
             try {
-                let { password, email } = request.body;
+                let { password, userId:id } = request.body;
                 let userInfo = await CommodityUser.findOne({
-                    where: { email },
+                    where: { id },
                 });
 
                 if (userInfo) {
@@ -442,7 +442,7 @@ export default (router: express.Application) => {
                 } else {
                     response.status(responseStatusCode.UNPROCESSIBLE_ENTITY).json({
                         status: responseStatus.UNPROCESSED,
-                        message: "Email does not exist.",
+                        message: "User does not exist.",
                     });
                 }
             } catch (err) {
@@ -525,12 +525,12 @@ export default (router: express.Application) => {
     ///////////////////////////// GET USER CREDIT,DEBIT CARD /////////////////////////
 
     router.get(
-        "/api/auth/bcards/:email",
+        "/api/auth/bcards/:userId",
         async (request: express.Request, response: express.Response) => {
             try {
-                let email: string = request.params?.email;
+                let userId: string = request.params?.userId;
                 let cardInfo = await CommodityBankCardDetail.findAll({
-                    where: { email },
+                    where: { userId },
                 });
                 if (cardInfo.length > 0) {
                     response.status(responseStatusCode.OK).json({
@@ -540,7 +540,7 @@ export default (router: express.Application) => {
                 } else {
                     response.status(responseStatusCode.NOT_FOUND).json({
                         status: responseStatus.ERROR,
-                        message: `User with ${email} does not exists.`,
+                        message: `User with ${userId} does not exists.`,
                     });
                 }
             } catch (err) {
@@ -591,9 +591,9 @@ export default (router: express.Application) => {
         "/api/auth/phone/",
         async (request: express.Request, response: express.Response) => {
             try {
-                let { phoneNumber, email } = request.body;
+                let { phoneNumber, userId } = request.body;
                 let contactInfo = await CommodityUserContact.findOne({
-                    where: { email },
+                    where: { userId },
                 });
                 if (contactInfo) {
                     let newPhoneNumbers = JSON.parse(
@@ -612,7 +612,7 @@ export default (router: express.Application) => {
                 } else {
                     response.status(responseStatusCode.UNPROCESSIBLE_ENTITY).json({
                         status: responseStatus.UNPROCESSED,
-                        message: `User with ${email} does not exist`,
+                        message: `User with ${userId} does not exist`,
                     });
                 }
             } catch (err) {
@@ -631,9 +631,9 @@ export default (router: express.Application) => {
         "/api/auth/phone/",
         async (request: express.Request, response: express.Response) => {
             try {
-                let { phoneNumber, email } = request.body;
+                let { phoneNumber, userId } = request.body;
                 let contactInfo = await CommodityUserContact.findOne({
-                    where: { email },
+                    where: { userId },
                 });
                 if (contactInfo) {
                     let newPhoneNumbers = JSON.parse(
@@ -652,7 +652,7 @@ export default (router: express.Application) => {
                 } else {
                     response.status(responseStatusCode.UNPROCESSIBLE_ENTITY).json({
                         status: responseStatus.UNPROCESSED,
-                        message: `User with ${email} does not exist`,
+                        message: `User with ${userId} does not exist`,
                     });
                 }
             } catch (err) {
@@ -736,11 +736,11 @@ export default (router: express.Application) => {
     ///////////////////////////// GET ALL USER TRANSFEREES /////////////////////////
 
     router.get(
-        "/api/auth/transferee/:email",
+        "/api/auth/transferee/:transferorId",
         async (request: express.Request, response: express.Response) => {
             try {
-                let email = request.params.email
-                let transferees = await CommodityTransferee.findAll({where:{email}});
+                let transferorId = request.params.transferorId
+                let transferees = await CommodityTransferee.findAll({where:{transferorId}});
                 console.log(transferees);
                 response.status(responseStatusCode.OK).json({
                     status: responseStatus.SUCCESS,
@@ -776,7 +776,7 @@ export default (router: express.Application) => {
                 } else {
                     response.status(responseStatusCode.UNPROCESSIBLE_ENTITY).json({
                         status: responseStatus.UNPROCESSED,
-                        message: `Transferee with id = ${id} does not exist.`,
+                        message: `Transferee with ownerId = ${id} does not exist.`,
                     });
                 }
             } catch (err) {

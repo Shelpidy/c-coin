@@ -16,7 +16,7 @@ export default (router: express.Application) => {
                 if (createdCommodity) {
                     response.status(responseStatusCode.CREATED).json({
                         status: responseStatus.SUCCESS,
-                        message: `You have successfully added an amout of ${commodity?.balance} to the user's account ${commodity?.email}`,
+                        message: `You have successfully added an amount of ${commodity?.balance} to the user's account ${commodity?.email}`,
                         data: createdCommodity,
                     });
                 } else {
@@ -40,11 +40,11 @@ export default (router: express.Application) => {
     ////////////////////// CHECK BALANCE /////////////////////////
 
     router.get(
-        "/api/commodities/checkbalance/:email",
+        "/api/commodities/checkbalance/:userId",
         async (request: express.Request, response: express.Response) => {
             try {
-                let email = request.params.email;
-                let commodity = await Commodity.findOne({ where: { email } });
+                let userId = request.params.userId;
+                let commodity = await Commodity.findOne({ where: { userId } });
 
                 if (commodity) {
                     response.status(responseStatusCode.OK).json({
@@ -52,7 +52,7 @@ export default (router: express.Application) => {
                         balance: commodity?.getDataValue("balance"),
                     });
                 } else {
-                    response.status(responseStatusCode.NOT_FOUND).json({
+                    response.status(responseStatusCode.OK).json({
                         status: responseStatus.ERROR,
                         balance: "C 0.00",
                     });
@@ -70,11 +70,11 @@ export default (router: express.Application) => {
     /////////////////// GET COMMODITY  //////////////////////////
 
     router.get(
-        "/api/commodities/:email",
+        "/api/commodities/:userId",
         async (request: express.Request, response: express.Response) => {
             try {
-                let email = request.params.email;
-                let commodity = await Commodity.findOne({ where: { email } });
+                let userId = request.params.userId;
+                let commodity = await Commodity.findOne({ where: { userId } });
 
                 if (commodity) {
                     response.status(responseStatusCode.OK).json({
@@ -121,12 +121,12 @@ export default (router: express.Application) => {
     ////////////////////////// DELETE COMMODITY ///////////////////////
 
     router.delete(
-        "/api/commodities/:email",
+        "/api/commodities/:userId",
         async (request: express.Request, response: express.Response) => {
             try {
-                let email = request.params.email;
+                let userId = request.params.userId;
                 let deleteObj = await Commodity.destroy({
-                    where: { email },
+                    where: { userId },
                 });
                 if (deleteObj > 0) {
                     response.status(responseStatusCode.ACCEPTED).json({
@@ -139,7 +139,7 @@ export default (router: express.Application) => {
                         .status(responseStatusCode.UNPROCESSIBLE_ENTITY)
                         .json({
                             status: responseStatus.UNPROCESSED,
-                            message: `Failed to delete user's commodity with email ${email}`,
+                            message: `Failed to delete user's commodity with userId ${userId}`,
                         });
                 }
             } catch (err) {

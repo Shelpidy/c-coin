@@ -22,17 +22,17 @@ export default (router: express.Application) => {
                     amount: _amount,
                 } = request.body;
                 let amount = Math.abs(_amount);
-                let transfereeEmail = (
+                let transfereeId = (
                     await CommodityUser.findOne({
                         where: { accountNumber: transfereeAccountNumber },
                     })
-                )?.getDataValue("email");
-                let transferorEmail = (
+                )?.getDataValue("id");
+                let transferorId = (
                     await CommodityUser.findOne({
                         where: { accountNumber: transferorAccountNumber },
                     })
-                )?.getDataValue("email");
-                if (!transfereeEmail) {
+                )?.getDataValue("id");
+                if (!transfereeId) {
                     response
                         .status(responseStatusCode.UNPROCESSIBLE_ENTITY)
                         .json({
@@ -42,7 +42,7 @@ export default (router: express.Application) => {
                     return;
                 }
 
-                if (!transferorEmail) {
+                if (!transferorId) {
                     response
                         .status(responseStatusCode.UNPROCESSIBLE_ENTITY)
                         .json({
@@ -52,7 +52,7 @@ export default (router: express.Application) => {
                     return;
                 }
 
-                // let transfereeNotificationTokens = JSON.parse((await CommodityNotificationDetail.findOne({where:{email:transfereeAccountNumber}}))?.getDataValue("notificationToken"))
+                // let transfereeNotificationTokens = JSON.parse((await CommodityNotificationDetail.findOne({where:{userId:transfereeAccountNumber}}))?.getDataValue("notificationToken"))
                 let transfereeNotificationBody = `You have seccessfully received an amount of ${amount} from an account account ${transferorAccountNumber}`;
                 let transferorNotificationBody = `You have seccessfully sent an amount of ${amount} to the account number ${transfereeAccountNumber}`;
                 let responseMessage = `You have seccessfully sent an amount of ${amount} from the account number ${transferorAccountNumber} to the account number ${transfereeAccountNumber}`;
@@ -62,10 +62,10 @@ export default (router: express.Application) => {
                 let createdAt = new Date();
                 try {
                     let transfereeAcc = await Commodity.findOne({
-                        where: { email: transfereeEmail },
+                        where: { userId: transfereeId },
                     });
                     let transferorAcc = await Commodity.findOne({
-                        where: { email: transferorEmail },
+                        where: { userId: transferorId },
                     });
                     if (transferorAcc) {
                         let balance: number = Number(
@@ -105,14 +105,14 @@ export default (router: express.Application) => {
                                         });
                                     transferorNotDetailRecord =
                                         new CommodityNotification({
-                                            email: transferorEmail,
+                                            userId: transferorId,
                                             message: transferorNotificationBody,
                                             title: notificationTitle,
                                             createdAt,
                                         });
                                     transfereeNotDetailRecord =
                                         new CommodityNotification({
-                                            email: transfereeEmail,
+                                            userId: transfereeId,
                                             message: transfereeNotificationBody,
                                             title: notificationTitle,
                                             createdAt,
@@ -174,7 +174,7 @@ export default (router: express.Application) => {
 
                                 try {
                                     newTransfereeBalance = new Commodity({
-                                        email: transfereeEmail,
+                                        userId: transfereeId,
                                         balance: amount,
                                         createdAt,
                                     });
@@ -198,23 +198,21 @@ export default (router: express.Application) => {
                                         });
                                     transferorNotDetailRecord =
                                         new CommodityNotification({
-                                            email: transferorEmail,
+                                            userId: transferorId,
                                             message: transferorNotificationBody,
                                             title: "Transaction",
                                             createdAt,
                                         });
                                     transfereeNotDetailRecord =
                                         new CommodityNotification({
-                                            email: transfereeEmail,
+                                            userId: transfereeId,
                                             message: transfereeNotificationBody,
                                             title: "Transaction",
                                             createdAt,
                                         });
 
-                                    let _newTransfereeBalance =
-                                        await newTransfereeBalance.save();
-                                    let _newTransferorBalance =
-                                        await newTransferorBalance.save();
+                                    let _newTransfereeBalance = await newTransfereeBalance.save();
+                                    let _newTransferorBalance = await newTransferorBalance.save();
                                     await transactionRecord.save();
                                     await transferorNotDetailRecord.save();
                                     await transfereeNotDetailRecord.save();
@@ -272,7 +270,7 @@ export default (router: express.Application) => {
                             .status(responseStatusCode.UNPROCESSIBLE_ENTITY)
                             .json({
                                 status: responseStatus.UNPROCESSED,
-                                message: `Transferor account with ${transferorEmail} have C 0.00 balance`,
+                                message: `Transferor account with ${transferorId} have C 0.00 balance`,
                             });
                     }
                 } catch (err) {
@@ -316,12 +314,12 @@ export default (router: express.Application) => {
     /////////////////// GET TRANSACTIONS BY EMAIL //////////////////////////
 
     router.get(
-        "/api/transactions/:email",
+        "/api/transactions/:userId",
         async (request: express.Request, response: express.Response) => {
             try {
-                let email = request.params.email;
+                let userId = request.params.userId;
                 let accNumber = (
-                    await CommodityUser.findOne({ where: { email } })
+                    await CommodityUser.findOne({ where: { userId } })
                 )?.getDataValue("accountNumber");
                 let trans = await CommodityTransaction.findAll({
                     where: { transfereeAccountNumber: accNumber },
@@ -383,7 +381,7 @@ export default (router: express.Application) => {
 
     router.post("/api/transactions/buycommodity/",async(request:express.Request,response:express.Response)=>{
         try{
-            let {phoneNumber,email,amount} = request.body
+            let {phoneNumber,userId,amount} = request.body
             let phoneNumberCompany = await getPhoneNumberCompany(phoneNumber)
             if(phoneNumberCompany == 'africell'){
 

@@ -11,12 +11,12 @@ CommodityBankCardDetail.init(
             primaryKey: true,
             type: DataTypes.INTEGER,
         },
-        email: {
-            type: DataTypes.STRING,
+        userId: {
+            type: DataTypes.INTEGER,
             allowNull: false,
             references: {
                 model: "CommodityUsers",
-                key: "email",
+                key: "id",
             },
         },
         cardNumber: {

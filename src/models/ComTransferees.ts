@@ -11,18 +11,23 @@ CommodityTransferee.init(
             primaryKey: true,
             type: DataTypes.INTEGER,
         },
-        email: {
-            type: DataTypes.STRING,
+        transferorId: {
+            type: DataTypes.INTEGER,
             allowNull: false,
             references: {
                 model: "CommodityUsers",
-                key: "email",
+                key: "id",
             },
         },
-        transfereeEmail: {
-            type: DataTypes.STRING,
+        transfereeId: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            references: {
+                model: "CommodityUsers",
+                key: "id",
+            },
         },
-        trsnafereeName: {
+        transfereeName: {
             type: DataTypes.STRING,
         },
         transfereeAccountNumber: {

@@ -7,12 +7,12 @@ export default (router: express.Application) => {
     /////////////////// GET NOTIFICATIONS BY EMAIL //////////////////////////
 
     router.get(
-        "/api/notifications/:email",
+        "/api/notifications/:userId",
         async (request: express.Request, response: express.Response) => {
             try {
-                let email = request.params.email;
+                let userId = request.params.userId;
                 let notifications = await CommodityNotification.findAll({
-                    where: { email },
+                    where: { userId },
                 });
                 response.status(responseStatusCode.OK).json({
                     status: responseStatus.SUCCESS,
@@ -85,12 +85,12 @@ export default (router: express.Application) => {
     /////////////////////// DELETE USER NOTIFICATIONS //////////////////////
 
     router.delete(
-        "/api/notifications/del/:email",
+        "/api/notifications/del/:userId",
         async (request: express.Request, response: express.Response) => {
             try {
-                let email = request.params.email;
+                let userId = request.params.userId;
                 let deleteObj = await CommodityNotification.destroy({
-                    where: { email },
+                    where: { userId },
                 });
                 if (deleteObj > 0) {
                     response.status(responseStatusCode.ACCEPTED).json({
@@ -104,7 +104,7 @@ export default (router: express.Application) => {
                         .status(responseStatusCode.UNPROCESSIBLE_ENTITY)
                         .json({
                             status: responseStatus.UNPROCESSED,
-                            message: `Failed to delete user notifications with email ${email}`,
+                            message: `Failed to delete user notifications with userId ${userId}`,
                         });
                 }
             } catch (err) {
