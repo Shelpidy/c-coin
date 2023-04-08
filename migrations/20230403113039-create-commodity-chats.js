@@ -19,7 +19,7 @@ module.exports = {
                 onDelete: "CASCADE",
                 onUpdate: "CASCADE",
             },
-            ReceipientId: {
+            receipientId: {
                 type: Sequelize.INTEGER,
                 references: {
                     model: "CommodityUsers",

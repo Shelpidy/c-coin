@@ -9,7 +9,7 @@ module.exports = {
                 type: Sequelize.INTEGER,
                 primaryKey: true,
             },
-            tilte: {
+            title: {
                 type: Sequelize.TEXT,
             },
 
@@ -25,7 +25,6 @@ module.exports = {
             },
             userId: {
                 type: Sequelize.INTEGER,
-                unique: true,
                 references: {
                     model: "CommodityUsers",
                     key: "id",

@@ -6,6 +6,7 @@ import TransactionController from "./controllers/TransactionController";
 import AuthController from "./controllers/AuthController";
 // import MailController from "./controllers/MailController";
 import NotificationController from "./controllers/NotificationController";
+import MediaController from "./controllers/MediaController";
 
 dotenv.config();
 
@@ -17,6 +18,7 @@ app.use(authorizeApiAccess);
 
 AuthController(app);
 // MailController(app);
+MediaController(app)
 CommodityController(app);
 TransactionController(app);
 NotificationController(app);

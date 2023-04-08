@@ -198,6 +198,12 @@ export async function getPhoneNumberCompany(phoneNumber: string):Promise<"africe
     return "qcell";
 }
 
+export const getResponseBody = (status:string,message?:string,data?:any)=>{
+    return {
+       status,message,data
+    }
+}
+
 export const responseStatusCode = {
     UNATHORIZED: 401,
     OK: 200,

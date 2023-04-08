@@ -2,14 +2,25 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
     async up(queryInterface, Sequelize) {
-        await queryInterface.createTable("CommodityFollowers", {
+        await queryInterface.createTable("CommodityPostCommentLikes", {
             id: {
                 allowNull: false,
                 autoIncrement: true,
                 type: Sequelize.INTEGER,
                 primaryKey: true,
             },
-            followerId: {
+            commentId: {
+                type: Sequelize.INTEGER,
+                unique: true,
+                references: {
+                    model: "CommodityPostComments",
+                    key: "id",
+                },
+                allowNull: false,
+                onDelete: "CASCADE",
+                onUpdate: "CASCADE",
+            },
+            userId: {
                 type: Sequelize.INTEGER,
                 references: {
                     model: "CommodityUsers",
@@ -19,16 +30,7 @@ module.exports = {
                 onDelete: "CASCADE",
                 onUpdate: "CASCADE",
             },
-             followingId: {
-                type: Sequelize.INTEGER,
-                references: {
-                    model: "CommodityUsers",
-                    key: "id",
-                },
-                allowNull: false,
-                onDelete: "CASCADE",
-                onUpdate: "CASCADE",
-            },
+            
             createdAt: {
                 allowNull: false,
                 type: Sequelize.DATE,
@@ -40,6 +42,6 @@ module.exports = {
         });
     },
     async down(queryInterface, Sequelize) {
-        await queryInterface.dropTable("CommodityFollowers");
+        await queryInterface.dropTable("CommodityPostCommentLikes");
     },
 };
