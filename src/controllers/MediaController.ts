@@ -152,14 +152,14 @@ export default function mediaController(app: express.Application) {
   // Update a post
   app.put("/api/media/posts/", async (req, res) => {
 
-    const { title, text, images, video,id } = req.body;
+    const data = req.body;
 
     try {
-      const post = await CommodityPost.findByPk(id);
+      const post = await CommodityPost.findByPk(data?.id);
       if (!post) {
-        return res.status(404).json({ message: "Post not found" });
+        return res.status(responseStatusCode.NOT_FOUND).json(getResponseBody(responseStatus.ERROR,`Post with Id ${data?.id} does not exist`));
       }
-      const newPost =  await CommodityPost.update({title,text,images,video},{where:{id:id}})
+      const newPost =  await CommodityPost.update(data,{where:{id:data?.id}})
       res.status(responseStatusCode.ACCEPTED).json({
         status:responseStatus.SUCCESS,
         data:{
@@ -241,6 +241,25 @@ export default function mediaController(app: express.Application) {
     } catch (err) {
       console.log(err);
      res.status(responseStatusCode.BAD_REQUEST).json(getResponseBody(responseStatus.ERROR,"",err));
+    }
+  });
+
+
+   // Delete a comment
+  app.delete("/api/media/posts/comments/:id", async (req:express.Request, res:express.Response) => {
+     const { id } = req.params;
+    try {
+      const comment = await CommodityPostComment.findByPk(id);
+      if (!comment) {
+        return res.status(responseStatusCode.NOT_FOUND).json({ 
+            status:responseStatus.ERROR,
+            message: `Comment with Id ${id} does not exist` });
+      }
+      await comment.destroy();
+      res.status(responseStatusCode.ACCEPTED).json(getResponseBody(responseStatus.SUCCESS,"Successfully deleted a comment"));
+    } catch (err) {
+      console.log(err);
+      res.status(responseStatusCode.BAD_REQUEST).json(getResponseBody(responseStatus.ERROR,"",err));
     }
   });
 

@@ -11,7 +11,6 @@ module.exports = {
             },
            postId: {
                 type: Sequelize.INTEGER,
-                unique: true,
                 references: {
                     model: "CommodityPosts",
                     key: "id",
