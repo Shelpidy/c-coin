@@ -27,7 +27,7 @@ CommodityNotificationDetail.init(
         },
         deviceId: {
             type: DataTypes.STRING,
-            unique:true
+            unique: true,
         },
         createdAt: {
             allowNull: false,

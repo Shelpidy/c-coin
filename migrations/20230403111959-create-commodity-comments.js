@@ -9,7 +9,7 @@ module.exports = {
                 type: Sequelize.INTEGER,
                 primaryKey: true,
             },
-           postId: {
+            postId: {
                 type: Sequelize.INTEGER,
                 references: {
                     model: "CommodityPosts",
@@ -29,9 +29,9 @@ module.exports = {
                 onDelete: "CASCADE",
                 onUpdate: "CASCADE",
             },
-            text:{
-              type:Sequelize.TEXT,
-              allowNull:false
+            text: {
+                type: Sequelize.TEXT,
+                allowNull: false,
             },
             createdAt: {
                 allowNull: false,

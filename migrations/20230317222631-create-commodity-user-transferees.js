@@ -16,7 +16,7 @@ module.exports = {
                 primaryKey: true,
                 type: Sequelize.INTEGER,
             },
-           transferorId: {
+            transferorId: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
                 references: {
@@ -42,22 +42,22 @@ module.exports = {
             transfereeAccountNumber: {
                 type: Sequelize.STRING,
                 allowNull: false,
-                references:{
-                    model:"CommodityUsers",
-                    key:"accountNumber"
+                references: {
+                    model: "CommodityUsers",
+                    key: "accountNumber",
                 },
-                onDelete:"CASCADE",
-                onUpdate:"CASCADE"
+                onDelete: "CASCADE",
+                onUpdate: "CASCADE",
             },
             transferorAccountNumber: {
                 type: Sequelize.STRING,
                 allowNull: false,
-                 references:{
-                    model:"CommodityUsers",
-                    key:"accountNumber"
+                references: {
+                    model: "CommodityUsers",
+                    key: "accountNumber",
                 },
-                onDelete:"CASCADE",
-                onUpdate:"CASCADE"
+                onDelete: "CASCADE",
+                onUpdate: "CASCADE",
             },
             createdAt: {
                 allowNull: false,

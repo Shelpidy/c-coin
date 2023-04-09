@@ -18,7 +18,7 @@ app.use(authorizeApiAccess);
 
 AuthController(app);
 // MailController(app);
-MediaController(app)
+MediaController(app);
 CommodityController(app);
 TransactionController(app);
 NotificationController(app);

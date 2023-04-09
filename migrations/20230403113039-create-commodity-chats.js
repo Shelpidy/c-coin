@@ -29,24 +29,24 @@ module.exports = {
                 onDelete: "CASCADE",
                 onUpdate: "CASCADE",
             },
-            text:{
-              type:Sequelize.TEXT
+            text: {
+                type: Sequelize.TEXT,
             },
-            images:{
-              type:Sequelize.JSON
+            images: {
+                type: Sequelize.JSON,
             },
 
-            video:{
-              type:Sequelize.STRING
+            video: {
+                type: Sequelize.STRING,
             },
-            audio:{
-              type:Sequelize.STRING
+            audio: {
+                type: Sequelize.STRING,
             },
-            otherFile:{
-              type:Sequelize.STRING
+            otherFile: {
+                type: Sequelize.STRING,
             },
-            roomID:{
-              type:Sequelize.INTEGER
+            roomID: {
+                type: Sequelize.INTEGER,
             },
             createdAt: {
                 allowNull: false,

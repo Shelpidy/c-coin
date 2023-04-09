@@ -1,9 +1,9 @@
 import type { EmailParameter } from "./Utils.d";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
-import dotenv from "dotenv"
+import dotenv from "dotenv";
 
-dotenv.config()
+dotenv.config();
 
 export async function generateAccountNumber(id: string | any) {
     let numOfDigit: number = String(id).length;
@@ -132,38 +132,40 @@ export async function generateEmailHTML({
     }
 }
 
-export async function jwtEncode(data:any){
-    let encodedData = jwt.sign(data,process.env.APP_SECRET_KEY+"")
-    return encodedData
+export async function jwtEncode(data: any) {
+    let encodedData = jwt.sign(data, process.env.APP_SECRET_KEY + "");
+    return encodedData;
 }
 
-export async function jwtDecode(token:string){
-    let decodedData = jwt.decode(token)
-    return decodedData
+export async function jwtDecode(token: string) {
+    let decodedData = jwt.decode(token);
+    return decodedData;
 }
 
-export async function encryptBankCardNumber(data:any){
-    let encryptedData = jwt.sign(data,process.env.APP_SECRET_KEY+"")
-    return encryptedData
+export async function encryptBankCardNumber(data: any) {
+    let encryptedData = jwt.sign(data, process.env.APP_SECRET_KEY + "");
+    return encryptedData;
 }
 
-export async function decryptBankCardNumber(token:string){
-    let decryptedData = jwt.decode(token)
-    return decryptedData
+export async function decryptBankCardNumber(token: string) {
+    let decryptedData = jwt.decode(token);
+    return decryptedData;
 }
 
-export async function hashData(data:string){
-    let salt = await bcrypt.genSalt(10)
-    let encryptedData = await bcrypt.hash(data,salt)
-    return encryptedData
+export async function hashData(data: string) {
+    let salt = await bcrypt.genSalt(10);
+    let encryptedData = await bcrypt.hash(data, salt);
+    return encryptedData;
 }
 
-export async function matchWithHashedData(data:string,hashedData:string){
-    let isMatch = await bcrypt.compare(data,hashedData)
-    return isMatch
+export async function matchWithHashedData(data: string, hashedData: string) {
+    let isMatch = await bcrypt.compare(data, hashedData);
+    return isMatch;
 }
 
-export async function getPhoneNumberCompany(phoneNumber: string):Promise<"africell"|"orange"|"qcell"> {
+export async function getPhoneNumberCompany(
+    phoneNumber: string
+): Promise<"africell" | "orange" | "qcell"> {
     let code = phoneNumber.slice(0, 6);
     // console.log(code);
     let companiesCode: Record<string, string[]> = {
@@ -192,17 +194,27 @@ export async function getPhoneNumberCompany(phoneNumber: string):Promise<"africe
     for (let key of Object.keys(companiesCode)) {
         let codes = companiesCode[key];
         if (codes.includes(code)) {
-            return key == "africell"?"africell":key == "qcell"?"qcell":"orange";
+            return key == "africell"
+                ? "africell"
+                : key == "qcell"
+                ? "qcell"
+                : "orange";
         }
     }
     return "qcell";
 }
 
-export const getResponseBody = (status:string,message?:string,data?:any)=>{
+export const getResponseBody = (
+    status: string,
+    message?: string,
+    data?: any
+) => {
     return {
-       status,message,data
-    }
-}
+        status,
+        message,
+        data,
+    };
+};
 
 export const responseStatusCode = {
     UNATHORIZED: 401,

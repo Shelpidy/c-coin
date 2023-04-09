@@ -9,7 +9,7 @@ module.exports = {
                 type: Sequelize.INTEGER,
                 primaryKey: true,
             },
-           commentId: {
+            commentId: {
                 type: Sequelize.INTEGER,
                 unique: true,
                 references: {
@@ -30,9 +30,9 @@ module.exports = {
                 onDelete: "CASCADE",
                 onUpdate: "CASCADE",
             },
-            text:{
-              type:Sequelize.TEXT,
-              allowNull:false
+            text: {
+                type: Sequelize.TEXT,
+                allowNull: false,
             },
             createdAt: {
                 allowNull: false,

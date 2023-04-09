@@ -41,7 +41,7 @@ module.exports = {
             },
             deviceId: {
                 type: Sequelize.STRING,
-                unique:true
+                unique: true,
             },
             createdAt: {
                 allowNull: false,

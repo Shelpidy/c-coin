@@ -2,7 +2,11 @@ import express from "express";
 import { Commodity } from "../models/Commodities";
 import { CommodityTransaction } from "../models/ComTransactions";
 import { CommodityUser } from "../models/ComUsers";
-import { getPhoneNumberCompany, responseStatus, responseStatusCode } from "../utils/Utils";
+import {
+    getPhoneNumberCompany,
+    responseStatus,
+    responseStatusCode,
+} from "../utils/Utils";
 import { v4 } from "uuid";
 import { CommodityNotificationDetail } from "../models/ComNotificationDetails";
 import { CommodityNotification } from "../models/ComNotifications";
@@ -211,8 +215,10 @@ export default (router: express.Application) => {
                                             createdAt,
                                         });
 
-                                    let _newTransfereeBalance = await newTransfereeBalance.save();
-                                    let _newTransferorBalance = await newTransferorBalance.save();
+                                    let _newTransfereeBalance =
+                                        await newTransfereeBalance.save();
+                                    let _newTransferorBalance =
+                                        await newTransferorBalance.save();
                                     await transactionRecord.save();
                                     await transferorNotDetailRecord.save();
                                     await transfereeNotDetailRecord.save();
@@ -376,51 +382,49 @@ export default (router: express.Application) => {
         }
     );
 
-
     ////////////////////////////////////// BUY COMMODITY WITH ORANGE MONEY,AFRICELL MONEY OR QMONEY //////////////////
 
-    router.post("/api/transactions/buycommodity/",async(request:express.Request,response:express.Response)=>{
-        try{
-            let {phoneNumber,userId,amount} = request.body
-            let phoneNumberCompany = await getPhoneNumberCompany(phoneNumber)
-            if(phoneNumberCompany == 'africell'){
+    router.post(
+        "/api/transactions/buycommodity/",
+        async (request: express.Request, response: express.Response) => {
+            try {
+                let { phoneNumber, userId, amount } = request.body;
+                let phoneNumberCompany = await getPhoneNumberCompany(
+                    phoneNumber
+                );
+                if (phoneNumberCompany == "africell") {
+                    // 1. CONTACT COMPANY AND BUY COMMODITY
+                    // 2. COMMODITY BALANCE UPDATED
 
-                // 1. CONTACT COMPANY AND BUY COMMODITY
-                // 2. COMMODITY BALANCE UPDATED
-
-                response.status(responseStatusCode.ACCEPTED).json({
-                    status:responseStatus.SUCCESS,
-                    message:phoneNumberCompany
-                }) }
-            else if(phoneNumberCompany == "qcell"){
-                response.status(responseStatusCode.ACCEPTED).json({
-                    status:responseStatus.SUCCESS,
-                    message:phoneNumberCompany
-                }) 
-            } else{
-                 response.status(responseStatusCode.ACCEPTED).json({
-                    status:responseStatus.SUCCESS,
-                    message:phoneNumberCompany
-                }) 
-            }
-            }catch(err){
+                    response.status(responseStatusCode.ACCEPTED).json({
+                        status: responseStatus.SUCCESS,
+                        message: phoneNumberCompany,
+                    });
+                } else if (phoneNumberCompany == "qcell") {
+                    response.status(responseStatusCode.ACCEPTED).json({
+                        status: responseStatus.SUCCESS,
+                        message: phoneNumberCompany,
+                    });
+                } else {
+                    response.status(responseStatusCode.ACCEPTED).json({
+                        status: responseStatus.SUCCESS,
+                        message: phoneNumberCompany,
+                    });
+                }
+            } catch (err) {
                 console.log(err);
                 response.status(responseStatusCode.BAD_REQUEST).json({
                     status: responseStatus.ERROR,
                     data: err,
                 });
-
+            }
         }
-
-    })
-
-
+    );
 
     /////////////////////////////////////////// BUY COMMODITY WITH BANK CARD ///////////////////////////////////
 
-    router.post("api/transactions/buy",async(request:express.Request,response:express.Response)=>{
-
-
-    })
-    
+    router.post(
+        "api/transactions/buy",
+        async (request: express.Request, response: express.Response) => {}
+    );
 };

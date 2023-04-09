@@ -31,11 +31,11 @@ export default (router: express.Application) => {
                 let data = request.body;
                 let { personal, contact } = data;
                 let createdAt = new Date();
-                let email = personal?.email
-                let password = await hashData(personal.password)
-                let pinCode = await hashData(personal.pinCode)
-                let newPersonalInfo
-                let newContactInfo
+                let email = personal?.email;
+                let password = await hashData(personal.password);
+                let pinCode = await hashData(personal.pinCode);
+                let newPersonalInfo;
+                let newContactInfo;
                 console.log(data);
                 console.log("Date", createdAt);
                 let personalInfo = await CommodityUser.create({
@@ -43,24 +43,26 @@ export default (router: express.Application) => {
                     password,
                     pinCode,
                     createdAt,
-                    
                 });
                 let contactInfo = await CommodityUserContact.create({
                     ...contact,
                     createdAt,
-                    userId:personalInfo.getDataValue("id"),
+                    userId: personalInfo.getDataValue("id"),
                 });
                 try {
                     newPersonalInfo = await personalInfo.save();
                     newContactInfo = await contactInfo.save();
-                    let savePersonalData = await CommodityUser.findOne({where:{email}})
-                    if(savePersonalData){
-                           let accountNumber = await generateAccountNumber(savePersonalData.get("id"))
-                           console.log(accountNumber)
-                           savePersonalData.set('accountNumber',accountNumber)
-                           newPersonalInfo = await savePersonalData.save()
+                    let savePersonalData = await CommodityUser.findOne({
+                        where: { email },
+                    });
+                    if (savePersonalData) {
+                        let accountNumber = await generateAccountNumber(
+                            savePersonalData.get("id")
+                        );
+                        console.log(accountNumber);
+                        savePersonalData.set("accountNumber", accountNumber);
+                        newPersonalInfo = await savePersonalData.save();
                     }
-                   
                 } catch (err) {
                     await personalInfo.reload();
                     await contactInfo.reload();
@@ -77,13 +79,13 @@ export default (router: express.Application) => {
                 response.status(responseStatusCode.CREATED).json({
                     status: responseStatus.SUCCESS,
                     message: "User created successfully",
-                    data:{newPersonalInfo,newContactInfo}
+                    data: { newPersonalInfo, newContactInfo },
                 });
             } catch (err) {
                 console.log(err);
                 response.status(responseStatusCode.BAD_REQUEST).json({
                     status: responseStatus.ERROR,
-                    data:err,
+                    data: err,
                 });
             }
         }
@@ -98,13 +100,18 @@ export default (router: express.Application) => {
                 console.log(users);
                 response.status(responseStatusCode.OK).json({
                     status: responseStatus.SUCCESS,
-                    data: users.map(user =>{ return {...user.dataValues,fullName:user.getFullname()}}),
+                    data: users.map((user) => {
+                        return {
+                            ...user.dataValues,
+                            fullName: user.getFullname(),
+                        };
+                    }),
                 });
             } catch (err) {
-               console.log(err);
+                console.log(err);
                 response.status(responseStatusCode.BAD_REQUEST).json({
                     status: responseStatus.ERROR,
-                    data:err,
+                    data: err,
                 });
             }
         }
@@ -134,15 +141,18 @@ export default (router: express.Application) => {
                 response.status(responseStatusCode.OK).json({
                     status: responseStatus.SUCCESS,
                     data: {
-                        personal:{...personal.dataValues,fullName:personal.getFullname()},
-                        contact:contact?.dataValues,
+                        personal: {
+                            ...personal.dataValues,
+                            fullName: personal.getFullname(),
+                        },
+                        contact: contact?.dataValues,
                     },
                 });
             } catch (err) {
-               console.log(err);
+                console.log(err);
                 response.status(responseStatusCode.BAD_REQUEST).json({
                     status: responseStatus.ERROR,
-                    data:err,
+                    data: err,
                 });
             }
         }
@@ -154,43 +164,43 @@ export default (router: express.Application) => {
         "/api/auth/users/personal/",
         async (request: express.Request, response: express.Response) => {
             try {
-                let { key, value, userId:id } = request.body;
+                let { key, value, userId: id } = request.body;
                 let personalInfo = await CommodityUser.findOne({
                     where: { id },
                 });
-                if(personalInfo){
-                     if (key === "password") {
-                    personalInfo?.set(key, value);
-                    let info = await personalInfo?.save();
-                    console.log("Row Affected:", info);
-                    response.status(responseStatusCode.ACCEPTED).json({
-                        status: responseStatus.SUCCESS,
-                        message: `Successfuly update a user's ${key}`,
-                        affectedRow: personalInfo,
-                    });
+                if (personalInfo) {
+                    if (key === "password") {
+                        personalInfo?.set(key, value);
+                        let info = await personalInfo?.save();
+                        console.log("Row Affected:", info);
+                        response.status(responseStatusCode.ACCEPTED).json({
+                            status: responseStatus.SUCCESS,
+                            message: `Successfuly update a user's ${key}`,
+                            affectedRow: personalInfo,
+                        });
+                    } else {
+                        personalInfo?.set(key, value);
+                        let info = await personalInfo?.save();
+                        console.log("Row Affected:", info);
+                        response.status(responseStatusCode.ACCEPTED).json({
+                            status: responseStatus.SUCCESS,
+                            message: `Successfuly update a user's ${key}`,
+                            affectedRow: info,
+                        });
+                    }
                 } else {
-                    personalInfo?.set(key, value);
-                    let info = await personalInfo?.save();
-                    console.log("Row Affected:", info);
-                    response.status(responseStatusCode.ACCEPTED).json({
-                        status: responseStatus.SUCCESS,
-                        message: `Successfuly update a user's ${key}`,
-                        affectedRow: info,
-                    });
+                    response
+                        .status(responseStatusCode.UNPROCESSIBLE_ENTITY)
+                        .json({
+                            status: responseStatus.UNPROCESSED,
+                            message: `User's account with Id ${id} does not exist`,
+                        });
                 }
-
-                }else{
-                     response.status(responseStatusCode.UNPROCESSIBLE_ENTITY).json({
-                        status: responseStatus.UNPROCESSED,
-                        message: `User's account with Id ${id} does not exist`,
-                    });
-                }
-               
             } catch (err) {
-                 console.log(err);
+                console.log(err);
                 response.status(responseStatusCode.BAD_REQUEST).json({
                     status: responseStatus.ERROR,
-                    data:err,
+                    data: err,
                 });
             }
         }
@@ -206,28 +216,28 @@ export default (router: express.Application) => {
                 let contactInfo = await CommodityUserContact.findOne({
                     where: { userId },
                 });
-                if(contactInfo){
-                contactInfo?.set(key, value);
-                let info = await contactInfo?.save();
-                console.log("Row Affected:", info);
-                response.status(responseStatusCode.ACCEPTED).json({
-                    status: responseStatus.SUCCESS,
-                    message: `Successfuly update a user's ${key} info`,
-                    affectedRow: info,
-                });
-
-                }else{
-                        response.status(responseStatusCode.UNPROCESSIBLE_ENTITY).json({
-                        status: responseStatus.UNPROCESSED,
-                        message: `User's contact information with userId ${userId} does not exist`,
+                if (contactInfo) {
+                    contactInfo?.set(key, value);
+                    let info = await contactInfo?.save();
+                    console.log("Row Affected:", info);
+                    response.status(responseStatusCode.ACCEPTED).json({
+                        status: responseStatus.SUCCESS,
+                        message: `Successfuly update a user's ${key} info`,
+                        affectedRow: info,
                     });
+                } else {
+                    response
+                        .status(responseStatusCode.UNPROCESSIBLE_ENTITY)
+                        .json({
+                            status: responseStatus.UNPROCESSED,
+                            message: `User's contact information with userId ${userId} does not exist`,
+                        });
                 }
-               
             } catch (err) {
-               console.log(err);
+                console.log(err);
                 response.status(responseStatusCode.BAD_REQUEST).json({
                     status: responseStatus.ERROR,
-                    data:err,
+                    data: err,
                 });
             }
         }
@@ -249,16 +259,18 @@ export default (router: express.Application) => {
                         message: "Successfully deleted a user",
                     });
                 } else {
-                    response.status(responseStatusCode.UNPROCESSIBLE_ENTITY).json({
-                        status: responseStatus.UNPROCESSED,
-                        message: `User's account with ${id} does not exist`,
-                    });
+                    response
+                        .status(responseStatusCode.UNPROCESSIBLE_ENTITY)
+                        .json({
+                            status: responseStatus.UNPROCESSED,
+                            message: `User's account with ${id} does not exist`,
+                        });
                 }
             } catch (err) {
                 console.log(err);
                 response.status(responseStatusCode.BAD_REQUEST).json({
                     status: responseStatus.ERROR,
-                    data:err,
+                    data: err,
                 });
             }
         }
@@ -270,25 +282,43 @@ export default (router: express.Application) => {
         "/api/auth/users/login/",
         async (request: express.Request, response: express.Response) => {
             try {
-                let { password, email,deviceName,deviceId,notificationToken } = request.body;
+                let {
+                    password,
+                    email,
+                    deviceName,
+                    deviceId,
+                    notificationToken,
+                } = request.body;
                 let userInfo = await CommodityUser.findOne({
                     where: { email },
                 });
 
                 if (userInfo) {
-                    let hashedPassword = userInfo.getDataValue("password")
-                    let isMatch = await matchWithHashedData(password,hashedPassword)
+                    let hashedPassword = userInfo.getDataValue("password");
+                    let isMatch = await matchWithHashedData(
+                        password,
+                        hashedPassword
+                    );
                     if (isMatch) {
                         let notificationObject = {
-                            userId:userInfo.getDataValue("id"),
-                            deviceId:deviceId,
-                            deviceName:deviceName,
+                            userId: userInfo.getDataValue("id"),
+                            deviceId: deviceId,
+                            deviceName: deviceName,
                             createdAt: new Date(),
-                            notificationToken:notificationToken
-                        }
-                        let createdObject = await CommodityNotificationDetail.create(notificationObject)
+                            notificationToken: notificationToken,
+                        };
+                        let createdObject =
+                            await CommodityNotificationDetail.create(
+                                notificationObject
+                            );
                         console.log(userInfo);
-                        let loginToken = await jwtEncode({userId:userInfo.getDataValue("id"),email:userInfo.getDataValue("email"),accountNumber:userInfo.getDataValue("accountNumber"),deviceId:createdObject.getDataValue("deviceId")})
+                        let loginToken = await jwtEncode({
+                            userId: userInfo.getDataValue("id"),
+                            email: userInfo.getDataValue("email"),
+                            accountNumber:
+                                userInfo.getDataValue("accountNumber"),
+                            deviceId: createdObject.getDataValue("deviceId"),
+                        });
                         response.status(responseStatusCode.OK).json({
                             status: responseStatus.SUCCESS,
                             message: `Login successfully`,
@@ -307,10 +337,10 @@ export default (router: express.Application) => {
                     });
                 }
             } catch (err) {
-               console.log(err);
+                console.log(err);
                 response.status(responseStatusCode.BAD_REQUEST).json({
                     status: responseStatus.ERROR,
-                    data:err,
+                    data: err,
                 });
             }
         }
@@ -318,14 +348,13 @@ export default (router: express.Application) => {
 
     /////////////////////////////////////// LOGOUT USER ///////////////////////////////////
 
-
-       router.delete(
+    router.delete(
         "/api/auth/users/logout/",
         async (request: express.Request, response: express.Response) => {
             try {
-                let {userId,deviceId} = request.body;
+                let { userId, deviceId } = request.body;
                 let deletedObj = await CommodityNotificationDetail.destroy({
-                    where: { userId,deviceId},
+                    where: { userId, deviceId },
                 });
                 if (deletedObj > 0) {
                     response.status(responseStatusCode.ACCEPTED).json({
@@ -335,19 +364,19 @@ export default (router: express.Application) => {
                 } else {
                     response.status(responseStatusCode.NOT_FOUND).json({
                         status: responseStatus.ERROR,
-                        message: "Failed to lgout user. Ensure that the userId you used exists.",
+                        message:
+                            "Failed to lgout user. Ensure that the userId you used exists.",
                     });
                 }
             } catch (err) {
-              console.log(err);
+                console.log(err);
                 response.status(responseStatusCode.BAD_REQUEST).json({
                     status: responseStatus.ERROR,
-                    data:err,
+                    data: err,
                 });
             }
         }
     );
-
 
     //////////////////////////////////////// CHECK EMAIL //////////////////////////////////
 
@@ -371,10 +400,10 @@ export default (router: express.Application) => {
                     });
                 }
             } catch (err) {
-              console.log(err);
+                console.log(err);
                 response.status(responseStatusCode.BAD_REQUEST).json({
                     status: responseStatus.ERROR,
-                    data:err,
+                    data: err,
                 });
             }
         }
@@ -387,31 +416,29 @@ export default (router: express.Application) => {
         async (request: express.Request, response: express.Response) => {
             try {
                 let email: string = request.params?.email;
-                let {htmlPath,code} = await generateEmailHTML({ displayRandomCode: true });
+                let { htmlPath, code } = await generateEmailHTML({
+                    displayRandomCode: true,
+                });
                 let subject = "Mexu Commodity";
                 let mailer = new MailService(email, htmlPath, subject);
-             
-                let emailSent = await mailer.send("smtp",response,code);
-                if(emailSent){
-                    response.status(responseStatusCode.OK).json({
-                    status: responseStatus.SUCCESS,
-                    message: "Email sent successfully",
-                    data:{confirmationCode:code}
-                });
 
+                let emailSent = await mailer.send("smtp", response, code);
+                if (emailSent) {
+                    response.status(responseStatusCode.OK).json({
+                        status: responseStatus.SUCCESS,
+                        message: "Email sent successfully",
+                        data: { confirmationCode: code },
+                    });
                 }
             } catch (err) {
-               console.log(err);
+                console.log(err);
                 response.status(responseStatusCode.BAD_REQUEST).json({
                     status: responseStatus.ERROR,
-                    data:err,
+                    data: err,
                 });
             }
         }
     );
-
-   
-
 
     /////////////////////////////////////// CHECK PASSWORD /////////////////////////////////
 
@@ -419,14 +446,17 @@ export default (router: express.Application) => {
         "/api/auth/users/checkpassword/",
         async (request: express.Request, response: express.Response) => {
             try {
-                let { password, userId:id } = request.body;
+                let { password, userId: id } = request.body;
                 let userInfo = await CommodityUser.findOne({
                     where: { id },
                 });
 
                 if (userInfo) {
-                    let hashedPassword = userInfo.getDataValue("password")
-                    let isMatch = await matchWithHashedData(password,hashedPassword)
+                    let hashedPassword = userInfo.getDataValue("password");
+                    let isMatch = await matchWithHashedData(
+                        password,
+                        hashedPassword
+                    );
                     if (isMatch) {
                         console.log(userInfo);
                         response.status(responseStatusCode.ACCEPTED).json({
@@ -434,22 +464,26 @@ export default (router: express.Application) => {
                             message: `Password is valid`,
                         });
                     } else {
-                        response.status(responseStatusCode.UNPROCESSIBLE_ENTITY).json({
-                            status: responseStatus.UNPROCESSED,
-                            message: "Password is incorrect.",
-                        });
+                        response
+                            .status(responseStatusCode.UNPROCESSIBLE_ENTITY)
+                            .json({
+                                status: responseStatus.UNPROCESSED,
+                                message: "Password is incorrect.",
+                            });
                     }
                 } else {
-                    response.status(responseStatusCode.UNPROCESSIBLE_ENTITY).json({
-                        status: responseStatus.UNPROCESSED,
-                        message: "User does not exist.",
-                    });
+                    response
+                        .status(responseStatusCode.UNPROCESSIBLE_ENTITY)
+                        .json({
+                            status: responseStatus.UNPROCESSED,
+                            message: "User does not exist.",
+                        });
                 }
             } catch (err) {
-               console.log(err);
+                console.log(err);
                 response.status(responseStatusCode.BAD_REQUEST).json({
                     status: responseStatus.ERROR,
-                    data:err,
+                    data: err,
                 });
             }
         }
@@ -463,9 +497,9 @@ export default (router: express.Application) => {
             try {
                 let data = request.body;
                 let createdAt = new Date();
-                let cardNumber = await encryptBankCardNumber(data.cardNumber)
+                let cardNumber = await encryptBankCardNumber(data.cardNumber);
                 console.log(data);
-             
+
                 let bankInfo = await CommodityBankCardDetail.create({
                     ...data,
                     cardNumber,
@@ -494,7 +528,7 @@ export default (router: express.Application) => {
                 console.log(err);
                 response.status(responseStatusCode.BAD_REQUEST).json({
                     status: responseStatus.ERROR,
-                    data:err,
+                    data: err,
                 });
             }
         }
@@ -513,10 +547,10 @@ export default (router: express.Application) => {
                     data: cards,
                 });
             } catch (err) {
-               console.log(err);
+                console.log(err);
                 response.status(responseStatusCode.BAD_REQUEST).json({
                     status: responseStatus.ERROR,
-                    data:err,
+                    data: err,
                 });
             }
         }
@@ -544,10 +578,10 @@ export default (router: express.Application) => {
                     });
                 }
             } catch (err) {
-               console.log(err);
+                console.log(err);
                 response.status(responseStatusCode.BAD_REQUEST).json({
                     status: responseStatus.ERROR,
-                    data:err,
+                    data: err,
                 });
             }
         }
@@ -570,16 +604,18 @@ export default (router: express.Application) => {
                         deleteObj: deleteObj,
                     });
                 } else {
-                    response.status(responseStatusCode.UNPROCESSIBLE_ENTITY).json({
-                        status: responseStatus.UNPROCESSED,
-                        message: `Credit/Debit Card with id = ${id} does not exist.`,
-                    });
+                    response
+                        .status(responseStatusCode.UNPROCESSIBLE_ENTITY)
+                        .json({
+                            status: responseStatus.UNPROCESSED,
+                            message: `Credit/Debit Card with id = ${id} does not exist.`,
+                        });
                 }
             } catch (err) {
                 console.log(err);
                 response.status(responseStatusCode.BAD_REQUEST).json({
                     status: responseStatus.ERROR,
-                    data:err,
+                    data: err,
                 });
             }
         }
@@ -610,16 +646,18 @@ export default (router: express.Application) => {
                         affectedRow: info,
                     });
                 } else {
-                    response.status(responseStatusCode.UNPROCESSIBLE_ENTITY).json({
-                        status: responseStatus.UNPROCESSED,
-                        message: `User with ${userId} does not exist`,
-                    });
+                    response
+                        .status(responseStatusCode.UNPROCESSIBLE_ENTITY)
+                        .json({
+                            status: responseStatus.UNPROCESSED,
+                            message: `User with ${userId} does not exist`,
+                        });
                 }
             } catch (err) {
-               console.log(err);
+                console.log(err);
                 response.status(responseStatusCode.BAD_REQUEST).json({
                     status: responseStatus.ERROR,
-                    data:err,
+                    data: err,
                 });
             }
         }
@@ -650,41 +688,43 @@ export default (router: express.Application) => {
                         affectedRow: info,
                     });
                 } else {
-                    response.status(responseStatusCode.UNPROCESSIBLE_ENTITY).json({
-                        status: responseStatus.UNPROCESSED,
-                        message: `User with ${userId} does not exist`,
-                    });
+                    response
+                        .status(responseStatusCode.UNPROCESSIBLE_ENTITY)
+                        .json({
+                            status: responseStatus.UNPROCESSED,
+                            message: `User with ${userId} does not exist`,
+                        });
                 }
             } catch (err) {
-               console.log(err);
+                console.log(err);
                 response.status(responseStatusCode.BAD_REQUEST).json({
                     status: responseStatus.ERROR,
-                    data:err,
+                    data: err,
                 });
             }
         }
     );
 
-     /////////////////////// CORNFIRM PHONE NUMBER BY SMS AND CONFIRMATION CODE /////////////
+    /////////////////////// CORNFIRM PHONE NUMBER BY SMS AND CONFIRMATION CODE /////////////
 
-     router.post(
+    router.post(
         "/api/auth/phone/confirmnumber/",
         async (request: express.Request, response: express.Response) => {
             try {
-                let {phoneNumber}= request.body;
-                let {message,code} = await smsConfirmationMessage()
-                let sms = new SMS(phoneNumber,message);
+                let { phoneNumber } = request.body;
+                let { message, code } = await smsConfirmationMessage();
+                let sms = new SMS(phoneNumber, message);
                 let smsResponse = await sms.sendMessage("vonage");
                 response.status(responseStatusCode.OK).json({
                     status: responseStatus.SUCCESS,
                     message: "Message sent successfully",
-                    data:{confirmationCode:code}
+                    data: { confirmationCode: code },
                 });
             } catch (err) {
-               console.log(err);
+                console.log(err);
                 response.status(responseStatusCode.BAD_REQUEST).json({
                     status: responseStatus.ERROR,
-                    data:err,
+                    data: err,
                 });
             }
         }
@@ -727,7 +767,7 @@ export default (router: express.Application) => {
                 console.log(err);
                 response.status(responseStatusCode.BAD_REQUEST).json({
                     status: responseStatus.ERROR,
-                    data:err,
+                    data: err,
                 });
             }
         }
@@ -739,8 +779,10 @@ export default (router: express.Application) => {
         "/api/auth/transferee/:transferorId",
         async (request: express.Request, response: express.Response) => {
             try {
-                let transferorId = request.params.transferorId
-                let transferees = await CommodityTransferee.findAll({where:{transferorId}});
+                let transferorId = request.params.transferorId;
+                let transferees = await CommodityTransferee.findAll({
+                    where: { transferorId },
+                });
                 console.log(transferees);
                 response.status(responseStatusCode.OK).json({
                     status: responseStatus.SUCCESS,
@@ -750,16 +792,15 @@ export default (router: express.Application) => {
                 console.log(err);
                 response.status(responseStatusCode.BAD_REQUEST).json({
                     status: responseStatus.ERROR,
-                    data:err,
+                    data: err,
                 });
             }
         }
     );
 
-
     /////////////////////////////////// DELETE TRANSFEREE //////////////////////////////////
 
-     router.delete(
+    router.delete(
         "/api/auth/transferee/:id",
         async (request: express.Request, response: express.Response) => {
             try {
@@ -774,16 +815,18 @@ export default (router: express.Application) => {
                         deleteObj: deleteObj,
                     });
                 } else {
-                    response.status(responseStatusCode.UNPROCESSIBLE_ENTITY).json({
-                        status: responseStatus.UNPROCESSED,
-                        message: `Transferee with ownerId = ${id} does not exist.`,
-                    });
+                    response
+                        .status(responseStatusCode.UNPROCESSIBLE_ENTITY)
+                        .json({
+                            status: responseStatus.UNPROCESSED,
+                            message: `Transferee with ownerId = ${id} does not exist.`,
+                        });
                 }
             } catch (err) {
                 console.log(err);
                 response.status(responseStatusCode.BAD_REQUEST).json({
                     status: responseStatus.ERROR,
-                    data:err,
+                    data: err,
                 });
             }
         }
@@ -795,34 +838,32 @@ export default (router: express.Application) => {
         "/api/auth/checkaccountnumber/:number",
         async (request: express.Request, response: express.Response) => {
             try {
-                let accountNumber = request.params.number
-                let user = await CommodityUser.findOne({where:{accountNumber}});
-                if(user){
-                console.log(user);
-                response.status(responseStatusCode.OK).json({
-                    status: responseStatus.SUCCESS,
-                    message:"Accout number is valid",
-                    data: user,
+                let accountNumber = request.params.number;
+                let user = await CommodityUser.findOne({
+                    where: { accountNumber },
                 });
-                }else{
+                if (user) {
+                    console.log(user);
+                    response.status(responseStatusCode.OK).json({
+                        status: responseStatus.SUCCESS,
+                        message: "Accout number is valid",
+                        data: user,
+                    });
+                } else {
                     response.status(responseStatusCode.NOT_FOUND).json({
-                    status: responseStatus.ERROR,
-                    message: `Account number ${accountNumber} does not exist`,
-                });
-
+                        status: responseStatus.ERROR,
+                        message: `Account number ${accountNumber} does not exist`,
+                    });
                 }
-              
             } catch (err) {
                 console.log(err);
                 response.status(responseStatusCode.BAD_REQUEST).json({
                     status: responseStatus.ERROR,
-                    data:err,
+                    data: err,
                 });
             }
         }
     );
-
-
 
     /// GETS ROUTES
 
@@ -832,6 +873,6 @@ export default (router: express.Application) => {
             response.status(responseStatusCode.OK).json({
                 status: responseStatus.SUCCESS,
             });
-        } 
+        }
     );
 };
