@@ -7,6 +7,7 @@ import AuthController from "./controllers/AuthController";
 // import MailController from "./controllers/MailController";
 import NotificationController from "./controllers/NotificationController";
 import MediaController from "./controllers/MediaController";
+import CORS from "cors"
 
 dotenv.config();
 
@@ -15,6 +16,8 @@ const app: express.Application = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(authorizeApiAccess);
+app.use(CORS())
+
 
 AuthController(app);
 // MailController(app);

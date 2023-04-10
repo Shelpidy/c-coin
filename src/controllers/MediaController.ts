@@ -96,10 +96,10 @@ export default function mediaController(app: express.Application) {
 
                 ).map((obj) => obj.getDataValue("followingId"));
 
-                //   console.log(ids)
+                  console.log([...ids,userId])
                 const users = (await CommodityUser.findAll({
                     order: [["id", "DESC"]],
-                })).filter(user => ![ids,userId].includes(user.getDataValue("id")));
+                })).filter(user => !([...ids,Number(userId)].includes(user.getDataValue("id"))));
                 if (!users) {
                     return res.status(responseStatusCode.NOT_FOUND).json({
                         status: responseStatus.ERROR,
