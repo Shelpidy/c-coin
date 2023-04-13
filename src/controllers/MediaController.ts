@@ -198,6 +198,43 @@ export default function mediaController(app: express.Application) {
         }
     );
 
+     /////////////////// GET ALL USER POSTS /////////////
+
+    app.get("/api/media/posts/user/:userId",
+        async (req: express.Request, res: express.Response) => {
+            const { userId } = req.params;
+
+            try {
+                // let ids = (
+                //     await CommodityFollower.findAll({
+                //         where: { followerId: userId },
+                //     })
+                // ).map((obj) => obj.getDataValue("followingId"));
+                //   console.log(ids)
+                const post = await CommodityPost.findAll({
+                    where: {userId},
+                    order: [["id", "DESC"]],
+                });
+                if (!post) {
+                    return res.status(responseStatusCode.NOT_FOUND).json({
+                        status: responseStatus.ERROR,
+                        message: `Post with userId ${userId} does not exist`,
+                    });
+                }
+                res.status(responseStatusCode.OK).json({
+                    status: responseStatus.SUCCESS,
+                    data: post,
+                });
+            } catch (err) {
+                console.log(err);
+                res.status(responseStatusCode.BAD_REQUEST).json({
+                    status: responseStatus.ERROR,
+                    data: err,
+                });
+            }
+        }
+    );
+
     // Get all posts
 
     app.get("/api/media/posts", async (req, res) => {

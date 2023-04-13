@@ -4,7 +4,8 @@ import { CommodityNotification } from "../models/ComNotifications";
 import { responseStatus, responseStatusCode } from "../utils/Utils";
 
 export default (router: express.Application) => {
-    /////////////////// GET NOTIFICATIONS BY EMAIL //////////////////////////
+
+    /////////////////// GET NOTIFICATIONS BY USERID //////////////////////////
 
     router.get(
         "/api/notifications/:userId",
@@ -13,6 +14,7 @@ export default (router: express.Application) => {
                 let userId = request.params.userId;
                 let notifications = await CommodityNotification.findAll({
                     where: { userId },
+                    order: [["id", "DESC"]],
                 });
                 response.status(responseStatusCode.OK).json({
                     status: responseStatus.SUCCESS,
