@@ -16,45 +16,39 @@ module.exports = {
                 type: Sequelize.INTEGER,
                 primaryKey: true,
             },
-
             productName: {
                 type: Sequelize.STRING,
             },
-
             category: {
                 type: Sequelize.STRING,
             },
-
             description: {
                 type: Sequelize.STRING,
             },
-
             images: {
                 type: Sequelize.JSON,
             },
-
             price: {
                 type: Sequelize.STRING,
             },
             initialPrice: {
                 type: Sequelize.STRING,
             },
-
+            affiliatePrice: {
+                type: Sequelize.STRING,
+            },
             sizes: {
                 type: Sequelize.JSON,
             },
             numberAvailable: {
                 type: Sequelize.STRING,
             },
-
             rating: {
                 type: Sequelize.INTEGER,
             },
-
             availability:{
               type:Sequelize.STRING
             },
-
             userId: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
@@ -65,12 +59,10 @@ module.exports = {
                 onDelete:"CASCADE",
                 onUpdate:"CASCADE"
             },
-
             createdAt: {
                 allowNull: false,
                 type: Sequelize.DATE,
             },
-
             updatedAt: {
                 allowNull: true,
                 type: Sequelize.DATE,

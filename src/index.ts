@@ -7,6 +7,7 @@ import AuthController from "./controllers/AuthController";
 // import MailController from "./controllers/MailController";
 import NotificationController from "./controllers/NotificationController";
 import MediaController from "./controllers/MediaController";
+import MarketingController from "./controllers/MarketingController";
 import CORS from "cors"
 
 dotenv.config();
@@ -25,6 +26,7 @@ MediaController(app);
 CommodityController(app);
 TransactionController(app);
 NotificationController(app);
+MarketingController(app);
 
 app.get("/", (request: express.Request, response: express.Response) => {
     response.status(200).json({
