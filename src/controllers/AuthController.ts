@@ -18,6 +18,9 @@ import { CommodityBankCardDetail } from "../models/ComBankCardDetails";
 import { CommodityTransferee } from "../models/ComTransferees";
 import SMS from "../services/SMS";
 import { CommodityNotificationDetail } from "../models/ComNotificationDetails";
+import CommodityFollower from "../models/ComFollowers";
+import { CommodityProductSale } from "../models/ComProductSales";
+import { CommodityProductAffiliate } from "../models/ComProductAffiliates";
 
 export default (router: express.Application) => {
     /////////////////////////////////////////////////USERS ROUTES///////////////////////////////////////////////
@@ -117,19 +120,28 @@ export default (router: express.Application) => {
         }
     );
 
-    /// GET ONE USER ,BY ID, DETAILS, INCLUDING PERSONAL AND CONTACT
+    /// GET ONE USER ,BY ID, DETAILS, INCLUDING PERSONAL,CONTACT,SALES,FOLLOWERS,FOLLOWING
 
     router.get(
         "/api/auth/users/:userId",
         async (request: express.Request, response: express.Response) => {
             try {
-                let id: string = request.params?.userId;
+                let id = request.params?.userId;
                 let personal = await CommodityUser.findOne({
                     where: { id },
                 });
                 let contact = await CommodityUserContact.findOne({
                     where: { id },
                 });
+
+                let followers = await CommodityFollower.findAndCountAll({where:{followingId:id}})
+
+                let followings = await CommodityFollower.findAndCountAll({where:{followerId:id}})
+
+                let sales = await CommodityProductSale.findAndCountAll({where:{sellerId:id}})
+
+                let affiliates = await CommodityProductAffiliate.findAndCountAll({where:{affiliateId:id}})
+
                 if (!personal) {
                     response.status(responseStatusCode.NOT_FOUND).json({
                         status: responseStatus.ERROR,
@@ -146,6 +158,10 @@ export default (router: express.Application) => {
                             fullName: personal.getFullname(),
                         },
                         contact: contact?.dataValues,
+                        followers:{...followers,rows:followers.rows.map(follower => follower.dataValues)},
+                        followings:{...followings,rows:followings.rows.map(following => following.dataValues)},
+                        sales:{...sales,rows:sales.rows.map(sale => sale.dataValues)},
+                        affiliates:{...affiliates,rows:affiliates.rows.map(affiliate => affiliate.dataValues)},
                     },
                 });
             } catch (err) {

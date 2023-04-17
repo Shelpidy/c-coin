@@ -2,6 +2,7 @@ import express from "express";
 import CommodityPost from "../models/ComPosts";
 import {
     getResponseBody,
+    makePurchacePayment,
     responseStatus,
     responseStatusCode,
 } from "../utils/Utils";
@@ -11,6 +12,7 @@ import CommodityProductComment from "../models/ComProductComments";
 import CommodityProductLike from "../models/ComProductLikes";
 import { CommodityProductAffiliate } from "../models/ComProductAffiliates";
 import { CommodityProductSale } from "../models/ComProductSales";
+import type {MakePurchaseParams} from "../utils/Utils.d"
 
 export default function MarketingController(app: express.Application) {
  
@@ -53,11 +55,12 @@ export default function MarketingController(app: express.Application) {
     /////////////////////////// AFFILIATE A PRODUCT ///////////////////////////////////////
     
     app.post("/api/marketing/affiliates", async (req, res) => {
-        const {affiliateId,productId} = req.body;
+        const {affiliateId,productId,userId} = req.body;
         try {
             const product = await CommodityProductAffiliate.create({
                 affiliateId,
                 productId,
+                userId,
                 createdAt: new Date(),
             });
             res.status(responseStatusCode.CREATED).json({
@@ -125,7 +128,7 @@ export default function MarketingController(app: express.Application) {
 
     /////////////////// GET ALL PRODUCTS BY A USER SESSION /////////////
 
-    app.get("/api/marketing/products/:userId",
+    app.get("/api/marketing/products/session/:userId",
         async (req: express.Request, res: express.Response) => {
             const { userId } = req.params;
             try {
@@ -135,7 +138,7 @@ export default function MarketingController(app: express.Application) {
                     })
                 ).map((obj) => obj.getDataValue("followingId"));
                 //   console.log(ids)
-                const post = await CommodityPost.findAll({
+                const post = await CommodityProduct.findAll({
                     where: { userId: [...ids, userId] },
                     order: [["id", "DESC"]],
                 });
@@ -165,8 +168,10 @@ export default function MarketingController(app: express.Application) {
         async (req: express.Request, res: express.Response) => {
             const { userId } = req.params;
             try {
+                let usersId = (await CommodityProductAffiliate.findAll({attributes:['userId'],where:{affiliateId:userId}})).map(obj => obj.getDataValue("userId"))
+                console.log("Other users",usersId)
                 const products = await CommodityProduct.findAll({
-                    where: {userId},
+                    where: {userId:[...usersId,userId]},
                     order: [["id", "DESC"]],
                 });
                 if (!products) {
@@ -221,7 +226,7 @@ export default function MarketingController(app: express.Application) {
                 ).map((obj) => obj.getDataValue("followingId"));
                 //   console.log(ids)
                 const product = await CommodityProduct.findAll({
-                    where: { ownerId: [...ids, userId] },
+                    where: { userId: [...ids, userId] },
                     order: [["id", "DESC"]],
                 });
                 if (!product) {
@@ -354,7 +359,7 @@ export default function MarketingController(app: express.Application) {
 
 
 
-    ///////////////////////// Add a new comment to a post /////////////////////////////////
+    ///////////////////////// Add a new comment to a product /////////////////////////////////
 
     app.post("/api/marketing/products/comments/", async (req, res) => {
         const { productId, userId, text } = req.body;
@@ -516,7 +521,7 @@ export default function MarketingController(app: express.Application) {
     });
 
 
-//////////////////// Get all COMMENTS and LIKES for a specific post///////////////////
+//////////////////// Get all COMMENTS and LIKES for a specific pRODUCT///////////////////
 
     app.get("/api/marketing/products/cl/:productId", async (req, res) => {
         const { productId } = req.params;
@@ -541,4 +546,21 @@ export default function MarketingController(app: express.Application) {
             );
         }
     });
+
+    //////////////// MAKE PURCHASE OR BUY A PRODUCT //////////////////////
+
+
+    app.post("/api/marketing/buy",async(req:express.Request,res:express.Response)=>{
+
+        try{
+            let buyObj:MakePurchaseParams = req.body
+            await makePurchacePayment(req,res,buyObj)
+          
+        }catch(err){
+            console.log(err);
+            res.status(responseStatusCode.BAD_REQUEST).json(
+                getResponseBody(responseStatus.ERROR, "", err)
+            );
+        }
+    })
 }

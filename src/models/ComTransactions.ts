@@ -22,7 +22,6 @@ CommodityTransaction.init(
         },
         transactionId: {
             type: DataTypes.STRING,
-            unique: true,
         },
         createdAt: {
             allowNull: false,

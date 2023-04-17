@@ -37,6 +37,16 @@ CommodityProductAffiliate.init(
       onDelete: 'CASCADE',
       onUpdate: 'CASCADE',
     },
+    userId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      references: {
+        model: 'CommodityUsers',
+        key: 'id',
+      },
+      onDelete: 'CASCADE',
+      onUpdate: 'CASCADE',
+    },
     createdAt: {
       type: DataTypes.DATE,
       allowNull: false,

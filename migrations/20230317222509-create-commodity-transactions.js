@@ -30,7 +30,6 @@ module.exports = {
             },
             transactionId: {
                 type: Sequelize.STRING,
-                unique: true,
                 allowNull: false,
             },
             createdAt: {
