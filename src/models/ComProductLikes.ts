@@ -49,7 +49,7 @@ CommodityProductLike.init(
     sequelize,
     tableName: "CommodityProductLikes",
     timestamps: true,
-    underscored: true,
+    // underscored: true,
     modelName: "CommodityProductLike",
   }
 );

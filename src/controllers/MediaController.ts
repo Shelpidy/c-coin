@@ -87,7 +87,6 @@ export default function mediaController(app: express.Application) {
         "/api/media/unfollowing/:userId",
         async (req: express.Request, res: express.Response) => {
             const { userId } = req.params;
-
             try {
                let ids = (
                     await CommodityFollower.findAll({
