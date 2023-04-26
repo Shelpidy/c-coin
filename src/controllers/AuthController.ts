@@ -134,13 +134,22 @@ export default (router: express.Application) => {
                     where: { id },
                 });
 
-                let followers = await CommodityFollower.findAndCountAll({where:{followingId:id}})
+                let followers = await CommodityFollower.findAndCountAll({
+                    where: { followingId: id },
+                });
 
-                let followings = await CommodityFollower.findAndCountAll({where:{followerId:id}})
+                let followings = await CommodityFollower.findAndCountAll({
+                    where: { followerId: id },
+                });
 
-                let sales = await CommodityProductSale.findAndCountAll({where:{sellerId:id}})
+                let sales = await CommodityProductSale.findAndCountAll({
+                    where: { sellerId: id },
+                });
 
-                let affiliates = await CommodityProductAffiliate.findAndCountAll({where:{affiliateId:id}})
+                let affiliates =
+                    await CommodityProductAffiliate.findAndCountAll({
+                        where: { affiliateId: id },
+                    });
 
                 if (!personal) {
                     response.status(responseStatusCode.NOT_FOUND).json({
@@ -158,10 +167,28 @@ export default (router: express.Application) => {
                             fullName: personal.getFullname(),
                         },
                         contact: contact?.dataValues,
-                        followers:{...followers,rows:followers.rows.map(follower => follower.dataValues)},
-                        followings:{...followings,rows:followings.rows.map(following => following.dataValues)},
-                        sales:{...sales,rows:sales.rows.map(sale => sale.dataValues)},
-                        affiliates:{...affiliates,rows:affiliates.rows.map(affiliate => affiliate.dataValues)},
+                        followers: {
+                            ...followers,
+                            rows: followers.rows.map(
+                                (follower) => follower.dataValues
+                            ),
+                        },
+                        followings: {
+                            ...followings,
+                            rows: followings.rows.map(
+                                (following) => following.dataValues
+                            ),
+                        },
+                        sales: {
+                            ...sales,
+                            rows: sales.rows.map((sale) => sale.dataValues),
+                        },
+                        affiliates: {
+                            ...affiliates,
+                            rows: affiliates.rows.map(
+                                (affiliate) => affiliate.dataValues
+                            ),
+                        },
                     },
                 });
             } catch (err) {

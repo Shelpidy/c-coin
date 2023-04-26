@@ -12,19 +12,21 @@ import CommodityProductComment from "../models/ComProductComments";
 import CommodityProductLike from "../models/ComProductLikes";
 import { CommodityProductAffiliate } from "../models/ComProductAffiliates";
 import { CommodityProductSale } from "../models/ComProductSales";
-import type {MakePurchaseParams} from "../utils/Utils.d"
+import type { MakePurchaseParams } from "../utils/Utils.d";
+import CommodityProductRequest from "../models/ComProductRequests";
+import { CommodityUser } from "../models/ComUsers";
+import { CommodityNotification } from "../models/ComNotifications";
 
 export default function MarketingController(app: express.Application) {
- 
     /////////////////////////// GET USERS AFFILIATED PRODUCTS /////////////////////////////
-   app.get(
+    app.get(
         "/api/marketing/affiliates/:userId",
         async (req: express.Request, res: express.Response) => {
             const { userId } = req.params;
             try {
                 let ids = (
                     await CommodityProductAffiliate.findAll({
-                        where:{affiliateId:userId}
+                        where: { affiliateId: userId },
                     })
                 ).map((obj) => obj.getDataValue("productId"));
                 //   console.log(ids)
@@ -40,7 +42,7 @@ export default function MarketingController(app: express.Application) {
                 }
                 res.status(responseStatusCode.OK).json({
                     status: responseStatus.SUCCESS,
-                    data:products,
+                    data: products,
                 });
             } catch (err) {
                 console.log(err);
@@ -53,9 +55,9 @@ export default function MarketingController(app: express.Application) {
     );
 
     /////////////////////////// AFFILIATE A PRODUCT ///////////////////////////////////////
-    
+
     app.post("/api/marketing/affiliates", async (req, res) => {
-        const {affiliateId,productId,userId} = req.body;
+        const { affiliateId, productId, userId } = req.body;
         try {
             const product = await CommodityProductAffiliate.create({
                 affiliateId,
@@ -82,7 +84,9 @@ export default function MarketingController(app: express.Application) {
     app.delete("/api/marketing/affiliates/:id", async (req, res) => {
         const { id } = req.params;
         try {
-            const affilatedRecord = await CommodityProductAffiliate.findByPk(id);
+            const affilatedRecord = await CommodityProductAffiliate.findByPk(
+                id
+            );
             if (!affilatedRecord) {
                 return res.status(responseStatusCode.NOT_FOUND).json({
                     status: responseStatus.ERROR,
@@ -107,16 +111,13 @@ export default function MarketingController(app: express.Application) {
     /////////////////////// GET SALE HISTORY MADE //////////////////////
 
     app.get("/api/marketing/sales/:sellerId", async (req, res) => {
-
         const { sellerId } = req.params;
         try {
-            const sales = await CommodityProductSale.findAll({where:{sellerId}});
+            const sales = await CommodityProductSale.findAll({
+                where: { sellerId },
+            });
             res.status(responseStatusCode.ACCEPTED).json(
-                getResponseBody(
-                    responseStatus.SUCCESS,
-                    "",
-                    sales
-                )
+                getResponseBody(responseStatus.SUCCESS, "", sales)
             );
         } catch (err) {
             console.log(err);
@@ -128,7 +129,8 @@ export default function MarketingController(app: express.Application) {
 
     /////////////////// GET ALL PRODUCTS BY A USER SESSION /////////////
 
-    app.get("/api/marketing/products/session/:userId",
+    app.get(
+        "/api/marketing/products/session/:userId",
         async (req: express.Request, res: express.Response) => {
             const { userId } = req.params;
             try {
@@ -164,15 +166,31 @@ export default function MarketingController(app: express.Application) {
 
     ///////////////////// GET ALL USER PRODUCTS /////////////////////
 
-    app.get("/api/marketing/products/user/:userId",
+    app.get(
+        "/api/marketing/products/user/:userId",
         async (req: express.Request, res: express.Response) => {
             const { userId } = req.params;
             try {
-                let usersId = (await CommodityProductAffiliate.findAll({attributes:['userId'],where:{affiliateId:userId}})).map(obj => obj.getDataValue("userId"))
-                console.log("Other users",usersId)
-                const products = await CommodityProduct.findAll({
-                    where: {userId:[...usersId,userId]},
-                    order: [["id", "DESC"]],
+                let usersId = (
+                    await CommodityProductAffiliate.findAll({
+                        attributes: ["userId"],
+                        where: { affiliateId: userId },
+                    })
+                ).map((obj) => obj.getDataValue("userId"));
+                console.log("Other users", usersId);
+                const products = (
+                    await CommodityProduct.findAll({
+                        where: { userId: [...usersId, userId] },
+                        order: [["id", "DESC"]],
+                    })
+                ).map((product) => {
+                    if (product.getDataValue("userId") != userId) {
+                        return {
+                            ...product.dataValues,
+                            affiliateId: Number(userId),
+                        };
+                    }
+                    return { ...product.dataValues, affiliateId: null };
                 });
                 if (!products) {
                     return res.status(responseStatusCode.NOT_FOUND).json({
@@ -183,6 +201,45 @@ export default function MarketingController(app: express.Application) {
                 res.status(responseStatusCode.OK).json({
                     status: responseStatus.SUCCESS,
                     data: products,
+                });
+            } catch (err) {
+                console.log(err);
+                res.status(responseStatusCode.BAD_REQUEST).json({
+                    status: responseStatus.ERROR,
+                    data: err,
+                });
+            }
+        }
+    );
+
+    ////////////////////// GET ONE PRODUCT BY PRODUCT ID ////////////////////////////////
+
+    app.get(
+        "/api/marketing/products/:productId",
+        async (req: express.Request, res: express.Response) => {
+            const { productId } = req.params;
+            try {
+                let affiliateIdsId = (
+                    await CommodityProductAffiliate.findAll({
+                        where: { productId },
+                    })
+                ).map((obj) => obj.getDataValue("affiliateId"));
+                // console.log("Other affiliateIds",affiliateIdsId)
+                const product = await CommodityProduct.findOne({
+                    where: { id: productId },
+                });
+                if (!product) {
+                    return res.status(responseStatusCode.NOT_FOUND).json({
+                        status: responseStatus.ERROR,
+                        message: `Products with productId ${productId} does not exist`,
+                    });
+                }
+                res.status(responseStatusCode.OK).json({
+                    status: responseStatus.SUCCESS,
+                    data: {
+                        ...product.dataValues,
+                        affiliateId: affiliateIdsId,
+                    },
                 });
             } catch (err) {
                 console.log(err);
@@ -214,7 +271,7 @@ export default function MarketingController(app: express.Application) {
 
     //////////// Get all user products by userId and products followings //////////
     app.get(
-        "/api/marketing/products/:userId",
+        "/api/marketing/products/session/:userId",
         async (req: express.Request, res: express.Response) => {
             const { userId } = req.params;
 
@@ -308,7 +365,6 @@ export default function MarketingController(app: express.Application) {
         }
     });
 
-
     //////////////////////////////////// Delete a product//////////////////////////
 
     app.delete("/api/marketing/products/:id", async (req, res) => {
@@ -337,10 +393,9 @@ export default function MarketingController(app: express.Application) {
         }
     });
 
-
     ////////////////////////////// Get all comments for a specific product /////////////////////////
     app.get("/api/marketing/products/comments/:productId", async (req, res) => {
-        const { productId} = req.params;
+        const { productId } = req.params;
 
         try {
             const comments = await CommodityProductComment.findAll({
@@ -356,8 +411,6 @@ export default function MarketingController(app: express.Application) {
             );
         }
     });
-
-
 
     ///////////////////////// Add a new comment to a product /////////////////////////////////
 
@@ -520,22 +573,21 @@ export default function MarketingController(app: express.Application) {
         }
     });
 
-
-//////////////////// Get all COMMENTS and LIKES for a specific pRODUCT///////////////////
+    //////////////////// Get all COMMENTS and LIKES for a specific PRODUCT///////////////////
 
     app.get("/api/marketing/products/cl/:productId", async (req, res) => {
         const { productId } = req.params;
 
         try {
             const comments = await CommodityProductComment.findAll({
-                where: {productId },
+                where: { productId },
             });
 
             const likes = await CommodityProductLike.findAll({
-                where: {productId },
+                where: { productId },
             });
 
-            let comLikeData = {comments,likes}
+            let comLikeData = { comments, likes };
             res.status(responseStatusCode.OK).json(
                 getResponseBody(responseStatus.SUCCESS, "", comLikeData)
             );
@@ -549,18 +601,124 @@ export default function MarketingController(app: express.Application) {
 
     //////////////// MAKE PURCHASE OR BUY A PRODUCT //////////////////////
 
+    app.post(
+        "/api/marketing/buy",
+        async (req: express.Request, res: express.Response) => {
+            try {
+                let buyObj: MakePurchaseParams = req.body;
+                await makePurchacePayment(req, res, buyObj);
+            } catch (err) {
+                console.log(err);
+                res.status(responseStatusCode.BAD_REQUEST).json(
+                    getResponseBody(responseStatus.ERROR, "", err)
+                );
+            }
+        }
+    );
 
-    app.post("/api/marketing/buy",async(req:express.Request,res:express.Response)=>{
+    ///////////////////////////////// REQUEST A PRODUCT ////////////////////////
 
-        try{
-            let buyObj:MakePurchaseParams = req.body
-            await makePurchacePayment(req,res,buyObj)
-          
-        }catch(err){
+    app.post("/api/marketing/products/request/", async (req, res) => {
+        const { userId, productId } = req.body;
+        try {
+            const newProduct = await CommodityProductRequest.create({
+                userId,
+                productId,
+                createdAt: new Date(),
+            });
+
+            const product = await CommodityProduct.findOne({
+                where: { id: newProduct.getDataValue("productId") },
+            });
+            const user = await CommodityUser.findOne({ where: { id: userId } });
+            const productOwner = await CommodityUser.findOne({
+                where: { id: product?.getDataValue("userId") },
+            });
+
+            let requestNotificationBody = `${user?.getFullname()} is requesting for ${product?.getDataValue(
+                "productName"
+            )}`;
+            // let transferorNotificationBody = `You have seccessfully sent an amount of ${amount} to the account number ${transfereeAccountNumber}`;
+            // let responseMessage = `You have seccessfully sent an amount of ${amount} from the account number ${transferorAccountNumber} to the account number ${transfereeAccountNumber}`;
+
+            let notificationTitle = "Product Request";
+            let notificationType = "request";
+            let notificationFrom = userId;
+            let createdAt = new Date();
+
+            await CommodityNotification.create({
+                message: requestNotificationBody,
+                notificationFrom,
+                notificationType,
+                title: notificationTitle,
+                userId: productOwner?.getDataValue("id"),
+                createdAt,
+            });
+
+            res.status(responseStatusCode.CREATED).json(
+                getResponseBody(
+                    responseStatus.SUCCESS,
+                    "Added a request sucessfully",
+                    newProduct
+                )
+            );
+        } catch (err) {
             console.log(err);
             res.status(responseStatusCode.BAD_REQUEST).json(
                 getResponseBody(responseStatus.ERROR, "", err)
             );
         }
-    })
+    });
+
+    /////////////////////////// GET ALL REQUEST PRODUCTS //////////////////////
+
+    app.get("/api/marketing/products/request/:userId", async (req, res) => {
+        const { userId } = req.params;
+        try {
+            let productIds = (
+                await CommodityProductRequest.findAll({ where: { userId } })
+            ).map((request) => request.getDataValue("productId"));
+            const requestedProducts = await CommodityProduct.findAll({
+                where: { id: productIds },
+            });
+            res.status(responseStatusCode.OK).json(
+                getResponseBody(responseStatus.SUCCESS, "", requestedProducts)
+            );
+        } catch (err) {
+            console.log(err);
+            res.status(responseStatusCode.BAD_REQUEST).json(
+                getResponseBody(responseStatus.ERROR, "", err)
+            );
+        }
+    });
+
+    /////////////////////////////// DELETE A REQUEST /////////////////////////////////
+
+    app.delete(
+        "/api/marketing/products/request/:id",
+        async (req: express.Request, res: express.Response) => {
+            const { id } = req.params;
+            try {
+                const proRequest = await CommodityProductRequest.findByPk(id);
+                if (!proRequest) {
+                    return res.status(responseStatusCode.NOT_FOUND).json({
+                        status: responseStatus.ERROR,
+                        message: `Request with Id ${id} does not exist`,
+                    });
+                }
+                await proRequest.destroy();
+                res.status(responseStatusCode.ACCEPTED).json(
+                    getResponseBody(
+                        responseStatus.SUCCESS,
+                        "Successfully deleted a request"
+                    )
+                );
+            } catch (err) {
+                console.log(err);
+                res.status(responseStatusCode.BAD_REQUEST).json(
+                    getResponseBody(responseStatus.ERROR, "", err)
+                );
+            }
+        }
+    );
 }

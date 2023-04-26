@@ -6,7 +6,7 @@ import {
     getPhoneNumberCompany,
     responseStatus,
     responseStatusCode,
-    transferCommodity
+    transferCommodity,
 } from "../utils/Utils";
 import { v4 } from "uuid";
 import { CommodityNotificationDetail } from "../models/ComNotificationDetails";
@@ -14,14 +14,13 @@ import { CommodityNotification } from "../models/ComNotifications";
 import NotificationService from "../services/NotificationService";
 import { compareSync } from "bcrypt";
 
-
 let notification = new NotificationService();
 
 export default (router: express.Application) => {
     router.post(
         "/api/transactions/sendcommodity",
-        async (request: express.Request, response: express.Response)=>{
-          try {
+        async (request: express.Request, response: express.Response) => {
+            try {
                 let {
                     transfereeAccountNumber,
                     transferorAccountNumber,
@@ -63,7 +62,7 @@ export default (router: express.Application) => {
                 let transferorNotificationBody = `You have seccessfully sent an amount of C${amount} to the account number ${transfereeAccountNumber}`;
                 let responseMessage = `You have seccessfully sent an amount of C${amount} from the account number ${transferorAccountNumber} to the account number ${transfereeAccountNumber}`;
 
-                let notificationTitle = "Transaction";
+                let notificationTitle = "Commodity Transaction";
 
                 let createdAt = new Date();
                 try {
@@ -101,6 +100,7 @@ export default (router: express.Application) => {
                                         "Transaction ID: ",
                                         transactionId
                                     );
+
                                     transactionRecord =
                                         new CommodityTransaction({
                                             transfereeAccountNumber,
@@ -109,18 +109,23 @@ export default (router: express.Application) => {
                                             transactionId,
                                             createdAt,
                                         });
+
                                     transferorNotDetailRecord =
                                         new CommodityNotification({
                                             userId: transferorId,
+                                            notificationFrom: transfereeId,
                                             message: transferorNotificationBody,
                                             title: notificationTitle,
+                                            notificationType: "transaction",
                                             createdAt,
                                         });
                                     transfereeNotDetailRecord =
                                         new CommodityNotification({
                                             userId: transfereeId,
+                                            notificationFrom: transferorId,
                                             message: transfereeNotificationBody,
                                             title: notificationTitle,
+                                            notificationType: "transaction",
                                             createdAt,
                                         });
 
@@ -206,14 +211,18 @@ export default (router: express.Application) => {
                                         new CommodityNotification({
                                             userId: transferorId,
                                             message: transferorNotificationBody,
-                                            title: "Transaction",
+                                            notificationFrom: transfereeId,
+                                            title: "Commodity Transaction",
+                                            notificationType: "transaction",
                                             createdAt,
                                         });
                                     transfereeNotDetailRecord =
                                         new CommodityNotification({
                                             userId: transfereeId,
                                             message: transfereeNotificationBody,
-                                            title: "Transaction",
+                                            notificationFrom: transferorId,
+                                            title: "Commodity Transaction",
+                                            notificationType: "transaction",
                                             createdAt,
                                         });
 
@@ -295,8 +304,6 @@ export default (router: express.Application) => {
                     data: err,
                 });
             }
-
-            
         }
         // async (request: express.Request, response: express.Response) => {
         //     try {

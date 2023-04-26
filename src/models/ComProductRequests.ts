@@ -1,31 +1,20 @@
-import { Model, DataTypes } from "sequelize";
+import { DataTypes, Model, Sequelize } from "sequelize";
 import sequelize from "../database/connection";
 
-export class CommodityProductAffiliate extends Model {
+class CommodityProductRequest extends Model {
     //   public id!: number;
-    //   public affiliateId!: number;
-    //   public productId!: number;
-    //   public readonly createdAt!: Date;
+    //   public postId!: number;
+    //   public userId!: number;
+    //   public createdAt!: Date;
     //   public updatedAt!: Date;
 }
 
-CommodityProductAffiliate.init(
+CommodityProductRequest.init(
     {
         id: {
             type: DataTypes.INTEGER,
-            allowNull: false,
             autoIncrement: true,
             primaryKey: true,
-        },
-        affiliateId: {
-            type: DataTypes.INTEGER,
-            allowNull: false,
-            references: {
-                model: "CommodityUsers",
-                key: "id",
-            },
-            onDelete: "CASCADE",
-            onUpdate: "CASCADE",
         },
         productId: {
             type: DataTypes.INTEGER,
@@ -58,7 +47,11 @@ CommodityProductAffiliate.init(
     },
     {
         sequelize,
-        modelName: "CommodityProductAffiliate",
-        tableName: "CommodityProductAffiliates",
+        tableName: "CommodityProductRequests",
+        timestamps: true,
+        // underscored: true,
+        modelName: "CommodityProductRequest",
     }
 );
+
+export default CommodityProductRequest;

@@ -1,10 +1,9 @@
 import express from "express";
 import { Commodity } from "../models/Commodities";
 import { CommodityNotification } from "../models/ComNotifications";
-import { responseStatus, responseStatusCode } from "../utils/Utils";
+import { responseStatus, responseStatusCode,getResponseBody } from "../utils/Utils";
 
 export default (router: express.Application) => {
-
     /////////////////// GET NOTIFICATIONS BY USERID //////////////////////////
 
     router.get(
@@ -83,6 +82,41 @@ export default (router: express.Application) => {
             }
         }
     );
+
+    ///////////////////////// ADD READ STATUS /////////////////////////////
+
+    router.put("/api/notifications/read/:notificationId",async (request: express.Request, response: express.Response) => {
+         
+       try {
+            let notId = request.params.notificationId
+            const notification = await CommodityNotification.findByPk(notId);
+            if (!notification) {
+                return response
+                    .status(responseStatusCode.NOT_FOUND)
+                    .json(
+                        getResponseBody(
+                            responseStatus.ERROR,
+                            `Notification with Id ${notId} does not exist`
+                        )
+                    );
+            }
+            const newNot = await CommodityNotification.update({readStatus:true},{
+                where: { id: notId },
+            });
+            response.status(responseStatusCode.ACCEPTED).json({
+                status: responseStatus.SUCCESS,
+                data: {
+                    affectedRow: newNot,
+                },
+            });
+        }catch (err) {
+            console.log(err);
+            response.status(responseStatusCode.BAD_REQUEST).json({
+                status: responseStatus.ERROR,
+                data: err,
+            });
+            }
+    })
 
     /////////////////////// DELETE USER NOTIFICATIONS //////////////////////
 

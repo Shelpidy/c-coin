@@ -1,5 +1,5 @@
-import { Model, DataTypes } from 'sequelize';
-import sequelize from '../database/connection';
+import { Model, DataTypes } from "sequelize";
+import sequelize from "../database/connection";
 
 class CommodityProductComment extends Model {
     // public id!: number;
@@ -8,7 +8,6 @@ class CommodityProductComment extends Model {
     // public text!: string;
     // public createdAt!: Date;
     // public updatedAt!: Date;
-
     // static associate(models: any) {
     //     this.belongsTo(models.CommodityProduct, { foreignKey: 'postId', as: 'product' });
     //     this.belongsTo(models.CommodityUser, { foreignKey: 'userId', as: 'user' });
@@ -27,21 +26,21 @@ CommodityProductComment.init(
             type: DataTypes.INTEGER,
             allowNull: false,
             references: {
-                model: 'CommodityProducts',
-                key: 'id',
+                model: "CommodityProducts",
+                key: "id",
             },
-            onDelete: 'CASCADE',
-            onUpdate: 'CASCADE',
+            onDelete: "CASCADE",
+            onUpdate: "CASCADE",
         },
         userId: {
             type: DataTypes.INTEGER,
             allowNull: false,
             references: {
-                model: 'CommodityUsers',
-                key: 'id',
+                model: "CommodityUsers",
+                key: "id",
             },
-            onDelete: 'CASCADE',
-            onUpdate: 'CASCADE',
+            onDelete: "CASCADE",
+            onUpdate: "CASCADE",
         },
         text: {
             type: DataTypes.TEXT,
@@ -58,8 +57,8 @@ CommodityProductComment.init(
     },
     {
         sequelize,
-        modelName: 'CommodityProductComment',
-        tableName: 'CommodityProductComments',
+        modelName: "CommodityProductComment",
+        tableName: "CommodityProductComments",
     }
 );
 

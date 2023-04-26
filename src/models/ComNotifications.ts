@@ -25,6 +25,12 @@ CommodityNotification.init(
         message: {
             type: DataTypes.STRING,
         },
+        readStatus: {
+            type: DataTypes.BOOLEAN,
+        },
+        notificationFrom: {
+            type: DataTypes.INTEGER,
+        },
         createdAt: {
             allowNull: false,
             type: DataTypes.DATE,

@@ -6,16 +6,15 @@ export type EmailParameter = {
 };
 
 export type BuyResponseBody = {
-    productId:number,
-    affiliatedId?:number,
-    userId:number,
-    amount:number,
-}
+    productId: number;
+    affiliatedId?: number;
+    userId: number;
+    amount: number;
+};
 
 export type MakePurchaseParams = {
-     productId:number,
-     affiliateId?:number,
-     userId:number,
-     buyerId:number
-}
-
+    productId: number;
+    affiliateId?: number;
+    userId: number;
+    buyerId: number;
+};

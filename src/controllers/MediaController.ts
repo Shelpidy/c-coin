@@ -83,22 +83,28 @@ export default function mediaController(app: express.Application) {
     });
 
     /////////////////////////// GET USERS UNFOLLOWED /////////////////////////////
-   app.get(
+    app.get(
         "/api/media/unfollowing/:userId",
         async (req: express.Request, res: express.Response) => {
             const { userId } = req.params;
             try {
-               let ids = (
+                let ids = (
                     await CommodityFollower.findAll({
-                        where:{followerId:userId}
+                        where: { followerId: userId },
                     })
-
                 ).map((obj) => obj.getDataValue("followingId"));
 
-                  console.log([...ids,userId])
-                const users = (await CommodityUser.findAll({
-                    order: [["id", "DESC"]],
-                })).filter(user => !([...ids,Number(userId)].includes(user.getDataValue("id"))));
+                console.log([...ids, userId]);
+                const users = (
+                    await CommodityUser.findAll({
+                        order: [["id", "DESC"]],
+                    })
+                ).filter(
+                    (user) =>
+                        ![...ids, Number(userId)].includes(
+                            user.getDataValue("id")
+                        )
+                );
                 if (!users) {
                     return res.status(responseStatusCode.NOT_FOUND).json({
                         status: responseStatus.ERROR,
@@ -107,7 +113,7 @@ export default function mediaController(app: express.Application) {
                 }
                 res.status(responseStatusCode.OK).json({
                     status: responseStatus.SUCCESS,
-                    data:users,
+                    data: users,
                 });
             } catch (err) {
                 console.log(err);
@@ -119,10 +125,8 @@ export default function mediaController(app: express.Application) {
         }
     );
 
-
-    
     /////////////////////////// GET USERS FOLLOWED /////////////////////////////
-   app.get(
+    app.get(
         "/api/media/following/:userId",
         async (req: express.Request, res: express.Response) => {
             const { userId } = req.params;
@@ -130,9 +134,8 @@ export default function mediaController(app: express.Application) {
             try {
                 let ids = (
                     await CommodityFollower.findAll({
-                        where:{followerId:userId}
+                        where: { followerId: userId },
                     })
-
                 ).map((obj) => obj.getDataValue("followingId"));
                 //   console.log(ids)
                 const users = await CommodityUser.findAll({
@@ -147,7 +150,7 @@ export default function mediaController(app: express.Application) {
                 }
                 res.status(responseStatusCode.OK).json({
                     status: responseStatus.SUCCESS,
-                    data:users,
+                    data: users,
                 });
             } catch (err) {
                 console.log(err);
@@ -159,10 +162,10 @@ export default function mediaController(app: express.Application) {
         }
     );
 
-       
     /////////////////// GET ALL POST BY A USER SESSION /////////////
 
-    app.get("/api/media/posts/:userId",
+    app.get(
+        "/api/media/posts/:userId",
         async (req: express.Request, res: express.Response) => {
             const { userId } = req.params;
 
@@ -197,9 +200,10 @@ export default function mediaController(app: express.Application) {
         }
     );
 
-     /////////////////// GET ALL USER POSTS /////////////
+    /////////////////// GET ALL USER POSTS /////////////
 
-    app.get("/api/media/posts/user/:userId",
+    app.get(
+        "/api/media/posts/user/:userId",
         async (req: express.Request, res: express.Response) => {
             const { userId } = req.params;
 
@@ -211,7 +215,7 @@ export default function mediaController(app: express.Application) {
                 // ).map((obj) => obj.getDataValue("followingId"));
                 //   console.log(ids)
                 const post = await CommodityPost.findAll({
-                    where: {userId},
+                    where: { userId },
                     order: [["id", "DESC"]],
                 });
                 if (!post) {
@@ -590,8 +594,7 @@ export default function mediaController(app: express.Application) {
         }
     });
 
-
-//////////////////// Get all COMMENTS and LIKES for a specific post///////////////////
+    //////////////////// Get all COMMENTS and LIKES for a specific post///////////////////
 
     app.get("/api/media/posts/cl/:postId", async (req, res) => {
         const { postId } = req.params;
@@ -605,7 +608,7 @@ export default function mediaController(app: express.Application) {
                 where: { postId },
             });
 
-            let comLikeData = {comments,likes}
+            let comLikeData = { comments, likes };
             res.status(responseStatusCode.OK).json(
                 getResponseBody(responseStatus.SUCCESS, "", comLikeData)
             );

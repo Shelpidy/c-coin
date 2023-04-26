@@ -32,6 +32,12 @@ module.exports = {
             message: {
                 type: Sequelize.STRING,
             },
+            notificationFrom: {
+                type: Sequelize.INTEGER,
+            },
+            readStatus: {
+                type: Sequelize.BOOLEAN,
+            },
             createdAt: {
                 allowNull: false,
                 type: Sequelize.DATE,

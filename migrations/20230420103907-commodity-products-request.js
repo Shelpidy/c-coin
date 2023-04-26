@@ -1,15 +1,32 @@
 "use strict";
+
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
     async up(queryInterface, Sequelize) {
-        await queryInterface.createTable("CommodityChats", {
+        /**
+         * Add altering commands here.
+         *
+         * Example:
+         * await queryInterface.createTable('users', { id: Sequelize.INTEGER });
+         */
+        await queryInterface.createTable("CommodityProductRequests", {
             id: {
                 allowNull: false,
                 autoIncrement: true,
                 type: Sequelize.INTEGER,
                 primaryKey: true,
             },
-            senderId: {
+            productId: {
+                type: Sequelize.INTEGER,
+                references: {
+                    model: "CommodityProducts",
+                    key: "id",
+                },
+                allowNull: false,
+                onDelete: "CASCADE",
+                onUpdate: "CASCADE",
+            },
+            userId: {
                 type: Sequelize.INTEGER,
                 references: {
                     model: "CommodityUsers",
@@ -18,36 +35,8 @@ module.exports = {
                 allowNull: false,
                 onDelete: "CASCADE",
                 onUpdate: "CASCADE",
-            },
-            receipientId: {
-                type: Sequelize.INTEGER,
-                references: {
-                    model: "CommodityUsers",
-                    key: "id",
-                },
-                allowNull: false,
-                onDelete: "CASCADE",
-                onUpdate: "CASCADE",
-            },
-            text: {
-                type: Sequelize.TEXT,
-            },
-            images: {
-                type: Sequelize.JSON,
             },
 
-            video: {
-                type: Sequelize.STRING,
-            },
-            audio: {
-                type: Sequelize.STRING,
-            },
-            otherFile: {
-                type: Sequelize.STRING,
-            },
-            roomID: {
-                type: Sequelize.INTEGER,
-            },
             createdAt: {
                 allowNull: false,
                 type: Sequelize.DATE,
@@ -58,7 +47,14 @@ module.exports = {
             },
         });
     },
+
     async down(queryInterface, Sequelize) {
-        await queryInterface.dropTable("CommodityChats");
+        /**
+         * Add reverting commands here.
+         *
+         * Example:
+         * await queryInterface.dropTable('users');
+         */
+        await queryInterface.dropTable("CommodityProductRequests");
     },
 };
