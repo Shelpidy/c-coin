@@ -187,7 +187,7 @@ export default function MarketingController(app: express.Application) {
                     if (product.getDataValue("userId") != userId) {
                         return {
                             ...product.dataValues,
-                            affiliateId: Number(userId),
+                            affiliateId: [Number(userId)],
                         };
                     }
                     return { ...product.dataValues, affiliateId: null };
@@ -675,9 +675,8 @@ export default function MarketingController(app: express.Application) {
     app.get("/api/marketing/products/request/:userId", async (req, res) => {
         const { userId } = req.params;
         try {
-            let productIds = (
-                await CommodityProductRequest.findAll({ where: { userId } })
-            ).map((request) => request.getDataValue("productId"));
+            let productRequests = await CommodityProductRequest.findAll({ where: { userId } })
+            let productIds = productRequests.map((request) => request.getDataValue("productId"));
             const requestedProducts = await CommodityProduct.findAll({
                 where: { id: productIds },
             });
@@ -695,15 +694,16 @@ export default function MarketingController(app: express.Application) {
     /////////////////////////////// DELETE A REQUEST /////////////////////////////////
 
     app.delete(
-        "/api/marketing/products/request/:id",
+        "/api/marketing/products/request/:productId/:userId",
         async (req: express.Request, res: express.Response) => {
-            const { id } = req.params;
+            const { productId,userId } = req.params;
+            let proRequest = await CommodityProductRequest.findOne({where:{productId,userId}})
             try {
-                const proRequest = await CommodityProductRequest.findByPk(id);
+                let proRequest = await CommodityProductRequest.findOne({where:{productId,userId}})
                 if (!proRequest) {
                     return res.status(responseStatusCode.NOT_FOUND).json({
                         status: responseStatus.ERROR,
-                        message: `Request with Id ${id} does not exist`,
+                        message: `Request with productId ${productId} and userId ${userId} does not exist`,
                     });
                 }
                 await proRequest.destroy();

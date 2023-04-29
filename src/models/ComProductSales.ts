@@ -12,13 +12,13 @@ export class CommodityProductSale extends Model {
 
 CommodityProductSale.init(
     {
-        id: {
+        id:{
             type: DataTypes.INTEGER,
             allowNull: false,
             autoIncrement: true,
             primaryKey: true,
         },
-        sellerId: {
+        sellerId:{
             type: DataTypes.INTEGER,
             allowNull: false,
             references: {
@@ -28,7 +28,17 @@ CommodityProductSale.init(
             onDelete: "CASCADE",
             onUpdate: "CASCADE",
         },
-        productId: {
+        userId:{
+                type: DataTypes.INTEGER,
+                references: {
+                    model: "CommodityUsers",
+                    key: "id",
+                },
+                onDelete: "CASCADE",
+                onUpdate: "CASCADE",
+            },
+
+        productId:{
             type: DataTypes.INTEGER,
             allowNull: false,
             references: {
@@ -38,15 +48,18 @@ CommodityProductSale.init(
             onDelete: "CASCADE",
             onUpdate: "CASCADE",
         },
-        saleType: {
+
+        saleType:{
             type: DataTypes.STRING,
             allowNull: true,
         },
-        createdAt: {
+
+        createdAt:{
             type: DataTypes.DATE,
             allowNull: false,
         },
-        updatedAt: {
+
+        updatedAt:{
             type: DataTypes.DATE,
             allowNull: true,
         },

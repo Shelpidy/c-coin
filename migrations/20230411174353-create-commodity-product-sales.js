@@ -27,15 +27,16 @@ module.exports = {
                 onUpdate: "CASCADE",
             },
 
-            productId: {
+            userId: {
                 type: Sequelize.INTEGER,
                 references: {
-                    model: "CommodityProducts",
+                    model: "CommodityUsers",
                     key: "id",
                 },
                 onDelete: "CASCADE",
                 onUpdate: "CASCADE",
             },
+
 
             saleType: {
                 type: Sequelize.STRING,
