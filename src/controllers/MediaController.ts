@@ -30,7 +30,8 @@ export default function mediaController(app: express.Application) {
     //     }
     //   });
 
-    // Remove a like from a post or unlike a post
+    // Follow or unfollow a user
+
     app.put("/api/media/follows/", async (req, res) => {
         const { followerId, followingId } = req.body;
         try {
@@ -58,7 +59,7 @@ export default function mediaController(app: express.Application) {
                         getResponseBody(
                             responseStatus.SUCCESS,
                             "Unfollowed successfully",
-                            { affectedRow }
+                            { affectedRow,followed:false}
                         )
                     );
             }
@@ -71,7 +72,7 @@ export default function mediaController(app: express.Application) {
                 getResponseBody(
                     responseStatus.SUCCESS,
                     "Followed Sucessfully",
-                    newFollow
+                    {newFollow:newFollow.dataValues,followed:true}
                 )
             );
         } catch (err) {

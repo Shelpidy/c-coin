@@ -173,7 +173,6 @@ export default (router: express.Application) => {
                             message: `The product with productId ${productId} does not exist`,
                         });
                 }
-                let affiliate = await CommodityUser.findByPk()
                 let owner = await CommodityUser.findByPk(product.getDataValue("userId"))
                 // let notifications = await CommodityNotification.findAll();
                 response.status(responseStatusCode.OK).json({

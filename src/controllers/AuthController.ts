@@ -213,7 +213,7 @@ export default (router: express.Application) => {
                 });
                 if (personalInfo) {
                     if (key === "password") {
-                        personalInfo?.set(key, value);
+                        personalInfo?.set(key,await hashData(value));
                         let info = await personalInfo?.save();
                         console.log("Row Affected:", info);
                         response.status(responseStatusCode.ACCEPTED).json({
@@ -221,7 +221,18 @@ export default (router: express.Application) => {
                             message: `Successfuly update a user's ${key}`,
                             affectedRow: personalInfo,
                         });
-                    } else {
+                    } 
+                     else if (key === "pinCode") {
+                        personalInfo?.set(key,await hashData(value));
+                        let info = await personalInfo?.save();
+                        console.log("Row Affected:", info);
+                        response.status(responseStatusCode.ACCEPTED).json({
+                            status: responseStatus.SUCCESS,
+                            message: `Successfuly update a user's ${key}`,
+                            affectedRow: personalInfo,
+                        });
+                    } 
+                    else {
                         personalInfo?.set(key, value);
                         let info = await personalInfo?.save();
                         console.log("Row Affected:", info);
@@ -355,27 +366,29 @@ export default (router: express.Application) => {
                                 notificationObject
                             );
                         console.log(userInfo);
+                        let followingIds = await CommodityFollower.findAll({where:{followerId:userInfo.getDataValue("id")}})
                         let loginToken = await jwtEncode({
-                            userId: userInfo.getDataValue("id"),
+                            id: userInfo.getDataValue("id"),
                             email: userInfo.getDataValue("email"),
                             accountNumber:
-                                userInfo.getDataValue("accountNumber"),
+                            userInfo.getDataValue("accountNumber"),
                             deviceId: createdObject.getDataValue("deviceId"),
+                            followingIds
                         });
-                        response.status(responseStatusCode.OK).json({
+                        response.status(responseStatusCode.CREATED).json({
                             status: responseStatus.SUCCESS,
                             message: `Login successfully`,
                             token: loginToken,
                         });
                     } else {
-                        response.status(responseStatusCode.NOT_FOUND).json({
-                            status: responseStatus.ERROR,
+                        response.status(responseStatusCode.UNATHORIZED).json({
+                            status: responseStatus.UNATHORIZED,
                             message: "Password is incorrect.",
                         });
                     }
                 } else {
-                    response.status(responseStatusCode.NOT_FOUND).json({
-                        status: responseStatus.ERROR,
+                    response.status(responseStatusCode.UNATHORIZED).json({
+                        status: responseStatus.UNATHORIZED,                                                                                                                             
                         message: "Email does not exist.",
                     });
                 }
@@ -384,6 +397,7 @@ export default (router: express.Application) => {
                 response.status(responseStatusCode.BAD_REQUEST).json({
                     status: responseStatus.ERROR,
                     data: err,
+                    message:"Fail to login.Check your connection and try again."
                 });
             }
         }
