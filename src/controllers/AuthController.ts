@@ -366,7 +366,7 @@ export default (router: express.Application) => {
                                 notificationObject
                             );
                         console.log(userInfo);
-                        let followingIds = await CommodityFollower.findAll({where:{followerId:userInfo.getDataValue("id")}})
+                        let followingIds = (await CommodityFollower.findAll({where:{followerId:userInfo.getDataValue("id")}})).map(f => f.getDataValue("followingId"))
                         let loginToken = await jwtEncode({
                             id: userInfo.getDataValue("id"),
                             email: userInfo.getDataValue("email"),

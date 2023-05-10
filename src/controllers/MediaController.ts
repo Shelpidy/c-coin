@@ -72,7 +72,7 @@ export default function mediaController(app: express.Application) {
                 getResponseBody(
                     responseStatus.SUCCESS,
                     "Followed Sucessfully",
-                    {newFollow:newFollow.dataValues,followed:true}
+                    {newFollow:newFollow,followed:true}
                 )
             );
         } catch (err) {
@@ -126,9 +126,53 @@ export default function mediaController(app: express.Application) {
         }
     );
 
+    /////////// GET USER FOLLOWERS ////////////////////
+
+    app.get(
+        "/api/media/followers/:userId",
+        async (req: express.Request, res: express.Response) => {
+            const { userId } = req.params;
+            try {
+                let ids = (
+                    await CommodityFollower.findAll({
+                        where: { followingId: userId },
+                    })
+                ).map((obj) => obj.getDataValue("followerId"));
+
+                console.log([...ids]);
+                const users = (
+                    await CommodityUser.findAll({
+                        order: [["id", "DESC"]],
+                    })
+                ).filter(
+                    (user) =>
+                        [...ids].includes(
+                            user.getDataValue("id")
+                        )
+                );
+                if (!users) {
+                    return res.status(responseStatusCode.NOT_FOUND).json({
+                        status: responseStatus.ERROR,
+                        message: `User with userId ${userId} does not exist`,
+                    });
+                }
+                res.status(responseStatusCode.OK).json({
+                    status: responseStatus.SUCCESS,
+                    data: users,
+                });
+            } catch (err) {
+                console.log(err);
+                res.status(responseStatusCode.BAD_REQUEST).json({
+                    status: responseStatus.ERROR,
+                    data: err,
+                });
+            }
+        }
+    );
+
     /////////////////////////// GET USERS FOLLOWED /////////////////////////////
     app.get(
-        "/api/media/following/:userId",
+        "/api/media/followings/:userId",
         async (req: express.Request, res: express.Response) => {
             const { userId } = req.params;
 
