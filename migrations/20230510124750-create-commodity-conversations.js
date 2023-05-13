@@ -2,7 +2,7 @@
 
 module.exports = {
     up: async (queryInterface, Sequelize) => {
-        await queryInterface.createTable("CommodityChats", {
+        await queryInterface.createTable("CommodityConversations", {
             id: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
@@ -29,38 +29,18 @@ module.exports = {
                 onUpdate: "CASCADE",
                 onDelete: "CASCADE",
             },
-            text: {
+            lastText: {
                 type: Sequelize.STRING,
             },
-            image: {
-                type: Sequelize.STRING,
-            },
-            audio: {
-                type: Sequelize.STRING,
-            },
-            video: {
-                type: Sequelize.STRING,
-            },
-            otherFile: {
-                type: Sequelize.STRING,
+            receipientReadStatus: {
+                type: Sequelize.BOOLEAN,
             },
             roomId: {
                 type: Sequelize.INTEGER,
-                references: {
-                    model: "CommodityConversations",
-                    key: "roomId",
-                },
-                onUpdate: "CASCADE",
-                onDelete: "CASCADE",
+                unique:true
             },
-            sent: {
-                type: Sequelize.BOOLEAN,
-            },
-            received: {
-                type: Sequelize.BOOLEAN,
-            },
-            pending: {
-                type: Sequelize.BOOLEAN,
+            numberOfUnReadText: {
+                type: Sequelize.INTEGER,
             },
             createdAt: {
                 allowNull: false,
@@ -74,6 +54,6 @@ module.exports = {
     },
 
     down: async (queryInterface, Sequelize) => {
-        await queryInterface.dropTable("CommodityChats");
+        await queryInterface.dropTable("CommodityConversations");
     },
 };
