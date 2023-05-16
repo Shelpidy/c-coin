@@ -552,15 +552,23 @@ export default function mediaController(app: express.Application) {
     );
 
     // Get all likes for a specific post
-    app.get("/api/media/posts/likes/:postId", async (req, res) => {
-        const { postId } = req.params;
+    app.get("/api/media/posts/likes/:postId/:currentUserId", async (req, res) => {
+        const { postId,currentUserId } = req.params;
 
         try {
             const likes = await CommodityPostLike.findAll({
                 where: { postId },
             });
+
+            const userIds = likes.map(like => like.getDataValue("userId"))
+            const getUserFollowingIds = (await CommodityFollower.findAll({where:{followerId:currentUserId}})).map(following => following.getDataValue("followingId"))
+            let setOne = new Set(userIds)
+            let setTwo = new Set(getUserFollowingIds)
+            const commonIds = new Array(...new Set([...setOne].filter((item) => setTwo.has(item))));
+            let usersLiked = await CommodityUser.findAll({where:{id:[commonIds]}})
+                                                
             res.status(responseStatusCode.OK).json(
-                getResponseBody(responseStatus.SUCCESS, "", likes)
+                getResponseBody(responseStatus.SUCCESS,"", {likes,sessionUsers:usersLiked})
             );
         } catch (err) {
             console.log(err);
