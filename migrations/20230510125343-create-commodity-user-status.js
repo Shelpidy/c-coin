@@ -20,19 +20,19 @@ module.exports = {
                 onDelete: "CASCADE",
             },
             typing: {
-                type:Sequelize.BOOLEAN
+                type: Sequelize.BOOLEAN,
             },
             online: {
-                type:Sequelize.BOOLEAN,
+                type: Sequelize.BOOLEAN,
             },
             onChatScreen: {
-                type:Sequelize.BOOLEAN,
+                type: Sequelize.BOOLEAN,
             },
             reading: {
-                type:Sequelize.BOOLEAN,
+                type: Sequelize.BOOLEAN,
             },
             posting: {
-                type:Sequelize.BOOLEAN,
+                type: Sequelize.BOOLEAN,
             },
             lastSeen: {
                 type: Sequelize.DATE,

@@ -37,7 +37,6 @@ module.exports = {
                 onUpdate: "CASCADE",
             },
 
-
             saleType: {
                 type: Sequelize.STRING,
             },

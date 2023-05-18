@@ -675,8 +675,12 @@ export default function MarketingController(app: express.Application) {
     app.get("/api/marketing/products/request/:userId", async (req, res) => {
         const { userId } = req.params;
         try {
-            let productRequests = await CommodityProductRequest.findAll({ where: { userId } })
-            let productIds = productRequests.map((request) => request.getDataValue("productId"));
+            let productRequests = await CommodityProductRequest.findAll({
+                where: { userId },
+            });
+            let productIds = productRequests.map((request) =>
+                request.getDataValue("productId")
+            );
             const requestedProducts = await CommodityProduct.findAll({
                 where: { id: productIds },
             });
@@ -696,10 +700,14 @@ export default function MarketingController(app: express.Application) {
     app.delete(
         "/api/marketing/products/request/:productId/:userId",
         async (req: express.Request, res: express.Response) => {
-            const { productId,userId } = req.params;
-            let proRequest = await CommodityProductRequest.findOne({where:{productId,userId}})
+            const { productId, userId } = req.params;
+            let proRequest = await CommodityProductRequest.findOne({
+                where: { productId, userId },
+            });
             try {
-                let proRequest = await CommodityProductRequest.findOne({where:{productId,userId}})
+                let proRequest = await CommodityProductRequest.findOne({
+                    where: { productId, userId },
+                });
                 if (!proRequest) {
                     return res.status(responseStatusCode.NOT_FOUND).json({
                         status: responseStatus.ERROR,

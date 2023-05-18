@@ -529,8 +529,15 @@ export const makePurchacePayment = async (
         let product = await CommodityProduct.findOne({
             where: { id: productId },
         });
-        if(!product){
-            return response.status(responseStatusCode.UNPROCESSIBLE_ENTITY).json(getResponseBody(responseStatus.UNATHORIZED,"You have insufficient amount"))
+        if (!product) {
+            return response
+                .status(responseStatusCode.UNPROCESSIBLE_ENTITY)
+                .json(
+                    getResponseBody(
+                        responseStatus.UNATHORIZED,
+                        "You have insufficient amount"
+                    )
+                );
         }
         console.log(product?.dataValues);
         let price = Number(product?.getDataValue("price"));
@@ -740,28 +747,26 @@ export const makePurchacePayment = async (
                             await transfereeNotDetailRecord.save();
                             await affiliateNotDetailRecord?.save();
 
-                            if(affiliateId){
+                            if (affiliateId) {
                                 let sale = await CommodityProductSale.create({
-                                sellerId:affiliateId,
-                                productId,
-                                userId,
-                                saleType:'affiliate',
-                                createdAt
-                            })
-                               await sale.save()
-
-                            }else{
+                                    sellerId: affiliateId,
+                                    productId,
+                                    userId,
+                                    saleType: "affiliate",
+                                    createdAt,
+                                });
+                                await sale.save();
+                            } else {
                                 let sale = await CommodityProductSale.create({
-                                sellerId:userId,
-                                productId,
-                                userId,
-                                saleType:'owner',
-                                createdAt
-                            })
-                               await sale.save()
+                                    sellerId: userId,
+                                    productId,
+                                    userId,
+                                    saleType: "owner",
+                                    createdAt,
+                                });
+                                await sale.save();
                             }
-                            
-                            
+
                             await notification.sendNotification();
 
                             response.status(responseStatusCode.ACCEPTED).json({
@@ -917,25 +922,24 @@ export const makePurchacePayment = async (
                             // await transactionRecord.save();
                             await transferorNotDetailRecord.save();
                             await transfereeNotDetailRecord.save();
-                             if(affiliateId){
+                            if (affiliateId) {
                                 let sale = await CommodityProductSale.create({
-                                sellerId:affiliateId,
-                                productId,
-                                userId,
-                                saleType:'affiliate',
-                                createdAt
-                            })
-                               await sale.save()
-
-                            }else{
+                                    sellerId: affiliateId,
+                                    productId,
+                                    userId,
+                                    saleType: "affiliate",
+                                    createdAt,
+                                });
+                                await sale.save();
+                            } else {
                                 let sale = await CommodityProductSale.create({
-                                sellerId:userId,
-                                productId,
-                                userId,
-                                saleType:'owner',
-                                createdAt
-                            })
-                               await sale.save()
+                                    sellerId: userId,
+                                    productId,
+                                    userId,
+                                    saleType: "owner",
+                                    createdAt,
+                                });
+                                await sale.save();
                             }
                             await notification.sendNotification();
 

@@ -37,7 +37,7 @@ module.exports = {
             },
             roomId: {
                 type: Sequelize.INTEGER,
-                unique:true
+                unique: true,
             },
             numberOfUnReadText: {
                 type: Sequelize.INTEGER,

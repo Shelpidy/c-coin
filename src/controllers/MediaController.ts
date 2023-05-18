@@ -59,7 +59,7 @@ export default function mediaController(app: express.Application) {
                         getResponseBody(
                             responseStatus.SUCCESS,
                             "Unfollowed successfully",
-                            { affectedRow,followed:false}
+                            { affectedRow, followed: false }
                         )
                     );
             }
@@ -72,7 +72,7 @@ export default function mediaController(app: express.Application) {
                 getResponseBody(
                     responseStatus.SUCCESS,
                     "Followed Sucessfully",
-                    {newFollow:newFollow,followed:true}
+                    { newFollow: newFollow, followed: true }
                 )
             );
         } catch (err) {
@@ -144,12 +144,7 @@ export default function mediaController(app: express.Application) {
                     await CommodityUser.findAll({
                         order: [["id", "DESC"]],
                     })
-                ).filter(
-                    (user) =>
-                        [...ids].includes(
-                            user.getDataValue("id")
-                        )
-                );
+                ).filter((user) => [...ids].includes(user.getDataValue("id")));
                 if (!users) {
                     return res.status(responseStatusCode.NOT_FOUND).json({
                         status: responseStatus.ERROR,
@@ -552,31 +547,47 @@ export default function mediaController(app: express.Application) {
     );
 
     // Get all likes for a specific post
-    app.get("/api/media/posts/likes/:postId/:currentUserId", async (req, res) => {
-        const { postId,currentUserId } = req.params;
+    app.get(
+        "/api/media/posts/likes/:postId/:currentUserId",
+        async (req, res) => {
+            const { postId, currentUserId } = req.params;
 
-        try {
-            const likes = await CommodityPostLike.findAll({
-                where: { postId },
-            });
+            try {
+                const likes = await CommodityPostLike.findAll({
+                    where: { postId },
+                });
 
-            const userIds = likes.map(like => like.getDataValue("userId"))
-            const getUserFollowingIds = (await CommodityFollower.findAll({where:{followerId:currentUserId}})).map(following => following.getDataValue("followingId"))
-            let setOne = new Set(userIds)
-            let setTwo = new Set(getUserFollowingIds)
-            const commonIds = new Array(...new Set([...setOne].filter((item) => setTwo.has(item))));
-            let usersLiked = await CommodityUser.findAll({where:{id:[commonIds]}})
-                                                
-            res.status(responseStatusCode.OK).json(
-                getResponseBody(responseStatus.SUCCESS,"", {likes,sessionUsers:usersLiked})
-            );
-        } catch (err) {
-            console.log(err);
-            res.status(responseStatusCode.BAD_REQUEST).json(
-                getResponseBody(responseStatus.ERROR, "", err)
-            );
+                const userIds = likes.map((like) =>
+                    like.getDataValue("userId")
+                );
+                const getUserFollowingIds = (
+                    await CommodityFollower.findAll({
+                        where: { followerId: currentUserId },
+                    })
+                ).map((following) => following.getDataValue("followingId"));
+                let setOne = new Set(userIds);
+                let setTwo = new Set(getUserFollowingIds);
+                const commonIds = new Array(
+                    ...new Set([...setOne].filter((item) => setTwo.has(item)))
+                );
+                let usersLiked = await CommodityUser.findAll({
+                    where: { id: [commonIds] },
+                });
+
+                res.status(responseStatusCode.OK).json(
+                    getResponseBody(responseStatus.SUCCESS, "", {
+                        likes,
+                        sessionUsers: usersLiked,
+                    })
+                );
+            } catch (err) {
+                console.log(err);
+                res.status(responseStatusCode.BAD_REQUEST).json(
+                    getResponseBody(responseStatus.ERROR, "", err)
+                );
+            }
         }
-    });
+    );
 
     // Add a new like to a post
     //   app.post("/api/media/posts/likes", async (req, res) => {
