@@ -20,7 +20,6 @@ export default (router: express.Application) => {
         async (request: express.Request, response: express.Response) => {
             const { searchValue } = request.query;
             console.log(searchValue)
-
             try {
                 const products = await CommodityProduct.findAll({
                     where: {
