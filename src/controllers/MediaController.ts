@@ -10,6 +10,7 @@ import {
 import CommodityFollower from "../models/ComFollowers";
 import { CommodityUserContact } from "../models/ComUserContacts";
 import { CommodityUser } from "../models/ComUsers";
+import CommodityPostShare from "../models/ComPostShares";
 
 export default function mediaController(app: express.Application) {
     //////////////////////////////////////////// Follow a user ////////////////////////////////////
@@ -359,13 +360,18 @@ export default function mediaController(app: express.Application) {
 
     // Add a new post
     app.post("/api/media/posts", async (req, res) => {
-        const data = req.body;
-
+        const {postObj:data,sharedPostId} = req.body;
         try {
             const post = await CommodityPost.create({
                 ...data,
                 createdAt: new Date(),
             });
+            let shared = post.getDataValue("shared")
+        
+            if(shared){
+               let sharedPost =  await CommodityPostShare.create({userId:post.getDataValue("userId"),postId:sharedPostId})
+               console.log({sharedPost})
+            }
             res.status(responseStatusCode.CREATED).json({
                 status: responseStatus.SUCCESS,
                 message: "Successfully added a post",
@@ -658,21 +664,25 @@ export default function mediaController(app: express.Application) {
         }
     });
 
-    //////////////////// Get all COMMENTS and LIKES for a specific post///////////////////
+    //////////////////// Get all ,SHARE and LIKES for a specific post///////////////////
 
-    app.get("/api/media/posts/cl/:postId", async (req, res) => {
+    app.get("/api/media/posts/cls/:postId", async (req, res) => {
         const { postId } = req.params;
 
         try {
-            const comments = await CommodityPostComment.findAll({
+            const comments = await CommodityPostComment.findAndCountAll({
                 where: { postId },
             });
 
-            const likes = await CommodityPostLike.findAll({
+            const likes = await CommodityPostLike.findAndCountAll({
                 where: { postId },
             });
 
-            let comLikeData = { comments, likes };
+            const shares = await CommodityPostShare.findAndCountAll({
+                where: { postId },
+            });
+
+            let comLikeData = { comments, likes, shares};
             res.status(responseStatusCode.OK).json(
                 getResponseBody(responseStatus.SUCCESS, "", comLikeData)
             );

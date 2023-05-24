@@ -2,29 +2,22 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
     async up(queryInterface, Sequelize) {
-        await queryInterface.createTable("CommodityPosts", {
+        await queryInterface.createTable("CommodityProductReviews", {
             id: {
                 allowNull: false,
                 autoIncrement: true,
                 type: Sequelize.INTEGER,
                 primaryKey: true,
             },
-            title: {
-                type: Sequelize.TEXT,
-            },
-
-            text: {
-                type: Sequelize.TEXT,
-            },
-
-            images: {
-                type: Sequelize.JSON,
-            },
-            video: {
-                type: Sequelize.STRING,
-            },
-            shared: {
-                type: Sequelize.BOOLEAN,
+            productId: {
+                type: Sequelize.INTEGER,
+                references: {
+                    model: "CommodityProducts",
+                    key: "id",
+                },
+                allowNull: false,
+                onDelete: "CASCADE",
+                onUpdate: "CASCADE",
             },
             userId: {
                 type: Sequelize.INTEGER,
@@ -36,16 +29,7 @@ module.exports = {
                 onDelete: "CASCADE",
                 onUpdate: "CASCADE",
             },
-            fromId: {
-                type: Sequelize.INTEGER,
-                references: {
-                    model: "CommodityUsers",
-                    key: "id",
-                },
-                allowNull: false,
-                onDelete: "CASCADE",
-                onUpdate: "CASCADE",
-            },
+
             createdAt: {
                 allowNull: false,
                 type: Sequelize.DATE,
@@ -57,6 +41,6 @@ module.exports = {
         });
     },
     async down(queryInterface, Sequelize) {
-        await queryInterface.dropTable("CommodityPosts");
+        await queryInterface.dropTable("CommodityProductReviews");
     },
 };

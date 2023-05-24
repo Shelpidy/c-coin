@@ -2,14 +2,14 @@
 
 module.exports = {
     up: async (queryInterface, Sequelize) => {
-        await queryInterface.createTable("CommodityConversations", {
+        await queryInterface.createTable("CommodityGroupChatRooms", {
             id: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
                 autoIncrement: true,
                 primaryKey: true,
             },
-            senderId: {
+            adminId: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
                 references: {
@@ -19,7 +19,13 @@ module.exports = {
                 onUpdate: "CASCADE",
                 onDelete: "CASCADE",
             },
-            receipientId: {
+            otherAdminIds:{
+                type:Sequelize.JSON
+            },
+            groupName:{
+                type:Sequelize.STRING
+            },
+            lastSenderId: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
                 references: {
@@ -28,16 +34,16 @@ module.exports = {
                 },
                 onUpdate: "CASCADE",
                 onDelete: "CASCADE",
+            },
+            memberIds: {
+                type: Sequelize.JSON,
+                allowNull: false,
             },
             lastText: {
                 type: Sequelize.STRING,
             },
-            receipientReadStatus: {
-                type: Sequelize.BOOLEAN,
-            },
-            roomId: {
-                type: Sequelize.INTEGER,
-                unique: true,
+            receipientReadIds: {
+                type: Sequelize.JSON
             },
             numberOfUnReadText: {
                 type: Sequelize.INTEGER,
@@ -54,6 +60,6 @@ module.exports = {
     },
 
     down: async (queryInterface, Sequelize) => {
-        await queryInterface.dropTable("CommodityConversations");
+        await queryInterface.dropTable("CommodityGroupChatRooms");
     },
 };

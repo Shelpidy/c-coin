@@ -2,7 +2,7 @@
 
 module.exports = {
     up: async (queryInterface, Sequelize) => {
-        await queryInterface.createTable("CommodityChats", {
+        await queryInterface.createTable("CommodityChatRoomMessages", {
             id: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
@@ -47,8 +47,8 @@ module.exports = {
             roomId: {
                 type: Sequelize.INTEGER,
                 references: {
-                    model: "CommodityConversations",
-                    key: "roomId",
+                    model: "CommodityChatRooms",
+                    key: "id",
                 },
                 onUpdate: "CASCADE",
                 onDelete: "CASCADE",
@@ -74,6 +74,6 @@ module.exports = {
     },
 
     down: async (queryInterface, Sequelize) => {
-        await queryInterface.dropTable("CommodityChats");
+        await queryInterface.dropTable("CommodityChatRoomMessages");
     },
 };

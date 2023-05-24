@@ -1,50 +1,42 @@
 "use strict";
-/** @type {import('sequelize-cli').Migration} */
+
 module.exports = {
-    async up(queryInterface, Sequelize) {
-        await queryInterface.createTable("CommodityPosts", {
+    up: async (queryInterface, Sequelize) => {
+        await queryInterface.createTable("CommodityChatRooms", {
             id: {
+                type: Sequelize.INTEGER,
                 allowNull: false,
                 autoIncrement: true,
-                type: Sequelize.INTEGER,
                 primaryKey: true,
             },
-            title: {
-                type: Sequelize.TEXT,
+            senderId: {
+                type: Sequelize.INTEGER,
+                allowNull: false,
+                references: {
+                    model: "CommodityUsers",
+                    key: "id",
+                },
+                onUpdate: "CASCADE",
+                onDelete: "CASCADE",
             },
-
-            text: {
-                type: Sequelize.TEXT,
+            receipientId: {
+                type: Sequelize.INTEGER,
+                allowNull: false,
+                references: {
+                    model: "CommodityUsers",
+                    key: "id",
+                },
+                onUpdate: "CASCADE",
+                onDelete: "CASCADE",
             },
-
-            images: {
-                type: Sequelize.JSON,
-            },
-            video: {
+            lastText: {
                 type: Sequelize.STRING,
             },
-            shared: {
+            receipientReadStatus: {
                 type: Sequelize.BOOLEAN,
             },
-            userId: {
+            numberOfUnReadText: {
                 type: Sequelize.INTEGER,
-                references: {
-                    model: "CommodityUsers",
-                    key: "id",
-                },
-                allowNull: false,
-                onDelete: "CASCADE",
-                onUpdate: "CASCADE",
-            },
-            fromId: {
-                type: Sequelize.INTEGER,
-                references: {
-                    model: "CommodityUsers",
-                    key: "id",
-                },
-                allowNull: false,
-                onDelete: "CASCADE",
-                onUpdate: "CASCADE",
             },
             createdAt: {
                 allowNull: false,
@@ -56,7 +48,8 @@ module.exports = {
             },
         });
     },
-    async down(queryInterface, Sequelize) {
-        await queryInterface.dropTable("CommodityPosts");
+
+    down: async (queryInterface, Sequelize) => {
+        await queryInterface.dropTable("CommodityChatRooms");
     },
 };

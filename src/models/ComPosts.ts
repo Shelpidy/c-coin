@@ -9,6 +9,17 @@ CommodityPost.init(
         text: DataTypes.TEXT,
         images: DataTypes.JSON,
         video: DataTypes.STRING,
+        shared: DataTypes.BOOLEAN,
+        fromId: {
+                type: DataTypes.INTEGER,
+                references: {
+                    model: "CommodityUsers",
+                    key: "id",
+                },
+                allowNull: false,
+                onDelete: "CASCADE",
+                onUpdate: "CASCADE",
+            },
         userId: {
             type: DataTypes.INTEGER,
             allowNull: false,

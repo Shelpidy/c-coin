@@ -2,14 +2,14 @@
 
 module.exports = {
     up: async (queryInterface, Sequelize) => {
-        await queryInterface.createTable("CommodityUserStatus", {
+        await queryInterface.createTable("CommodityGroupChatRoomMessages", {
             id: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
                 autoIncrement: true,
                 primaryKey: true,
             },
-            userId: {
+            senderId: {
                 type: Sequelize.INTEGER,
                 allowNull: false,
                 references: {
@@ -19,23 +19,38 @@ module.exports = {
                 onUpdate: "CASCADE",
                 onDelete: "CASCADE",
             },
-            typing: {
-                type: Sequelize.BOOLEAN,
-            },
-            online: {
-                type: Sequelize.BOOLEAN,
-            },
-            activeRoom: {
+            text: {
                 type: Sequelize.STRING,
             },
-            reading: {
+            image: {
+                type: Sequelize.STRING,
+            },
+            audio: {
+                type: Sequelize.STRING,
+            },
+            video: {
+                type: Sequelize.STRING,
+            },
+            otherFile: {
+                type: Sequelize.STRING,
+            },
+            roomId: {
+                type: Sequelize.INTEGER,
+                references: {
+                    model: "CommodityGroupChatRooms",
+                    key: "id",
+                },
+                onUpdate: "CASCADE",
+                onDelete: "CASCADE",
+            },
+            sent: {
                 type: Sequelize.BOOLEAN,
             },
-            posting: {
+            received: {
                 type: Sequelize.BOOLEAN,
             },
-            lastSeen: {
-                type: Sequelize.DATE,
+            pending: {
+                type: Sequelize.BOOLEAN,
             },
             createdAt: {
                 allowNull: false,
@@ -49,6 +64,6 @@ module.exports = {
     },
 
     down: async (queryInterface, Sequelize) => {
-        await queryInterface.dropTable("CommodityUserStatus");
+        await queryInterface.dropTable("CommodityGroupChatRoomMessages");
     },
 };
