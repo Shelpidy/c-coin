@@ -3,6 +3,7 @@ import { Commodity } from "../models/Commodities";
 import { CommodityTransaction } from "../models/ComTransactions";
 import { CommodityUser } from "../models/ComUsers";
 import {
+    buyCommodity,
     getPhoneNumberCompany,
     responseStatus,
     responseStatusCode,
@@ -670,32 +671,37 @@ export default (router: express.Application) => {
     );
 
     ////////////////////////////////////// BUY COMMODITY WITH ORANGE MONEY,AFRICELL MONEY OR QMONEY //////////////////
+    
+
 
     router.post(
         "/api/transactions/buycommodity/",
         async (request: express.Request, response: express.Response) => {
             try {
-                let { phoneNumber, userId, amount } = request.body;
+                let { phoneNumber, userId,amount,pinCode} = request.body;
                 let phoneNumberCompany = await getPhoneNumberCompany(
                     phoneNumber
                 );
+                let message = `You have seccessfully bought an amount of c${amount} from the number ${phoneNumber} and telecommunication company ${phoneNumberCompany}`;
                 if (phoneNumberCompany == "africell") {
-                    // 1. CONTACT COMPANY AND BUY COMMODITY
+                    // 1. CONTACT TELECOMMUNICATION COMPANY TO DO THE CURENCY EXCHANGE
                     // 2. COMMODITY BALANCE UPDATED
-
+                    await buyCommodity(userId,amount)
                     response.status(responseStatusCode.ACCEPTED).json({
                         status: responseStatus.SUCCESS,
-                        message: phoneNumberCompany,
+                        message,
                     });
                 } else if (phoneNumberCompany == "qcell") {
+                    await buyCommodity(userId,amount)
                     response.status(responseStatusCode.ACCEPTED).json({
                         status: responseStatus.SUCCESS,
-                        message: phoneNumberCompany,
+                        message,
                     });
                 } else {
+                    await buyCommodity(userId,amount)
                     response.status(responseStatusCode.ACCEPTED).json({
                         status: responseStatus.SUCCESS,
-                        message: phoneNumberCompany,
+                        message,
                     });
                 }
             } catch (err) {

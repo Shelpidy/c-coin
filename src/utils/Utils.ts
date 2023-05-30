@@ -253,6 +253,45 @@ type TransferCommodityParams = {
     amount: number;
 };
 
+
+export const buyCommodity = async(userId:any,amount:number)=>{
+    try{
+        let commodity = await Commodity.findByPk(userId)
+        let notificationBody = `You have seccessfully bought an amount of ${amount}`;
+        let notificationTitle = 'Commodity'
+        if(commodity){
+        let newCommodity =  await commodity.increment("balance",{by:Number(amount)})
+        await CommodityNotification.create({
+                                    userId,
+                                    notificationFrom:userId,
+                                    message: notificationBody,
+                                    title: notificationTitle,
+                                    notificationType: "transaction",
+                                });
+        await notification.sendNotification()
+        
+    }
+    else{
+        await Commodity.create({balance:amount,userId})
+        await CommodityNotification.create({
+                                    userId,
+                                    notificationFrom:userId,
+                                    message: notificationBody,
+                                    title: notificationTitle,
+                                    notificationType: "transaction",
+                                });
+        await notification.sendNotification()
+    }
+
+    }catch(err){
+        throw err
+    }
+   
+
+    
+    
+}
+
 export const transferCommodity = async (
     request: express.Request,
     response: express.Response,

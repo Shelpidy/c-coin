@@ -15,7 +15,7 @@ CommodityPostShare.init(
             allowNull: false,
             references: {
                 model: "CommodityPosts",
-                key: "id",
+                key: "id", 
             },
             onDelete: "CASCADE",
             onUpdate: "CASCADE",
