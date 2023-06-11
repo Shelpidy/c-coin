@@ -297,7 +297,7 @@ export default function mediaController(app: express.Application) {
         }
     });
 
-    //////////// Get all user posts by userId
+    //////////// Get all user posts by userId and session
     app.get(
         "/api/media/posts/:userId",
         async (req: express.Request, res: express.Response) => {
@@ -433,7 +433,7 @@ export default function mediaController(app: express.Application) {
                 });
             }
             await post.destroy();
-            res.status(responseStatusCode.ACCEPTED).json(
+            res.status(responseStatusCode.DELETED).json(
                 getResponseBody(
                     responseStatus.SUCCESS,
                     "Successfully deleted a post"
@@ -537,7 +537,7 @@ export default function mediaController(app: express.Application) {
                     });
                 }
                 await comment.destroy();
-                res.status(responseStatusCode.ACCEPTED).json(
+                res.status(responseStatusCode.DELETED).json(
                     getResponseBody(
                         responseStatus.SUCCESS,
                         "Successfully deleted a comment"

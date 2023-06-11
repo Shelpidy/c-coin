@@ -68,7 +68,7 @@ export default (router: express.Application) => {
                     where: { id },
                 });
                 if (deleteObj > 0) {
-                    response.status(responseStatusCode.ACCEPTED).json({
+                    response.status(responseStatusCode.DELETED).json({
                         status: responseStatus.SUCCESS,
                         message: "Successfully deleted a notification record",
                         deleteObj: deleteObj,
@@ -144,7 +144,7 @@ export default (router: express.Application) => {
                     where: { userId },
                 });
                 if (deleteObj > 0) {
-                    response.status(responseStatusCode.ACCEPTED).json({
+                    response.status(responseStatusCode.DELETED).json({
                         status: responseStatus.SUCCESS,
                         message:
                             "Successfully deleted a user notification records",

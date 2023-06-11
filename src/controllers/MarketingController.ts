@@ -94,7 +94,7 @@ export default function MarketingController(app: express.Application) {
                 });
             }
             await affilatedRecord.destroy();
-            res.status(responseStatusCode.ACCEPTED).json(
+            res.status(responseStatusCode.DELETED).json(
                 getResponseBody(
                     responseStatus.SUCCESS,
                     "Successfully deleted san affiliated record"
@@ -379,7 +379,7 @@ export default function MarketingController(app: express.Application) {
                 });
             }
             await product.destroy();
-            res.status(responseStatusCode.ACCEPTED).json(
+            res.status(responseStatusCode.DELETED).json(
                 getResponseBody(
                     responseStatus.SUCCESS,
                     "Successfully deleted a product"
@@ -485,7 +485,7 @@ export default function MarketingController(app: express.Application) {
                     });
                 }
                 await comment.destroy();
-                res.status(responseStatusCode.ACCEPTED).json(
+                res.status(responseStatusCode.DELETED).json(
                     getResponseBody(
                         responseStatus.SUCCESS,
                         "Successfully deleted a comment"
@@ -715,7 +715,7 @@ export default function MarketingController(app: express.Application) {
                     });
                 }
                 await proRequest.destroy();
-                res.status(responseStatusCode.ACCEPTED).json(
+                res.status(responseStatusCode.DELETED).json(
                     getResponseBody(
                         responseStatus.SUCCESS,
                         "Successfully deleted a request"

@@ -165,13 +165,15 @@ export async function decryptBankCardNumber(token: string) {
     return decryptedData;
 }
 
-export async function hashData(data: string) {
+export async function hashData(_data: any) {
+    let data = String(_data)
     let salt = await bcrypt.genSalt(10);
     let encryptedData = await bcrypt.hash(data, salt);
     return encryptedData;
 }
 
-export async function matchWithHashedData(data: string, hashedData: string) {
+export async function matchWithHashedData(_data: any, hashedData: string) {
+    let data = String(_data)
     let isMatch = await bcrypt.compare(data, hashedData);
     return isMatch;
 }
@@ -234,6 +236,7 @@ export const responseStatusCode = {
     OK: 200,
     CREATED: 201,
     ACCEPTED: 202,
+    DELETED:203,
     NOT_FOUND: 404,
     BAD_REQUEST: 400,
     UNPROCESSIBLE_ENTITY: 422,

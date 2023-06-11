@@ -306,7 +306,7 @@ export default (router: express.Application) => {
                     where: { id },
                 });
                 if (deleteObj > 0) {
-                    response.status(responseStatusCode.ACCEPTED).json({
+                    response.status(responseStatusCode.DELETED).json({
                         status: responseStatus.SUCCESS,
                         message: "Successfully deleted a user",
                     });
@@ -419,7 +419,7 @@ export default (router: express.Application) => {
                     where: { userId, deviceId },
                 });
                 if (deletedObj > 0) {
-                    response.status(responseStatusCode.ACCEPTED).json({
+                    response.status(responseStatusCode.DELETED).json({
                         status: responseStatus.SUCCESS,
                         message: "Logout successfully",
                     });
@@ -660,7 +660,7 @@ export default (router: express.Application) => {
                     where: { id },
                 });
                 if (deleteObj > 0) {
-                    response.status(responseStatusCode.ACCEPTED).json({
+                    response.status(responseStatusCode.DELETED).json({
                         status: responseStatus.SUCCESS,
                         message: "Successfully deleted Credit/Debit Card",
                         deleteObj: deleteObj,
@@ -744,7 +744,7 @@ export default (router: express.Application) => {
                     contactInfo?.setDataValue("phoneNumbers", newPhoneNumbers);
                     let info = await contactInfo?.save();
                     // console.log("Row Affected:", info);
-                    response.status(responseStatusCode.ACCEPTED).json({
+                    response.status(responseStatusCode.DELETED).json({
                         status: responseStatus.SUCCESS,
                         message: `Successfuly deleted a user's phonenumber`,
                         affectedRow: info,
@@ -871,7 +871,7 @@ export default (router: express.Application) => {
                     where: { id },
                 });
                 if (deleteObj > 0) {
-                    response.status(responseStatusCode.ACCEPTED).json({
+                    response.status(responseStatusCode.DELETED).json({
                         status: responseStatus.SUCCESS,
                         message: "Successfully deleted a Transferee",
                         deleteObj: deleteObj,
