@@ -42,9 +42,11 @@ module.exports = {
                     model: "CommodityUsers",
                     key: "id",
                 },
-                allowNull: false,
                 onDelete: "CASCADE",
                 onUpdate: "CASCADE",
+            },
+            fromPostId: {
+                type: Sequelize.INTEGER,
             },
             createdAt: {
                 allowNull: false,

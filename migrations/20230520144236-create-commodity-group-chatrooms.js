@@ -42,7 +42,7 @@ module.exports = {
             lastText: {
                 type: Sequelize.STRING,
             },
-            receipientReadIds: {
+            recipientReadIds: {
                 type: Sequelize.JSON
             },
             numberOfUnReadText: {

@@ -16,9 +16,11 @@ CommodityPost.init(
                     model: "CommodityUsers",
                     key: "id",
                 },
-                allowNull: false,
                 onDelete: "CASCADE",
                 onUpdate: "CASCADE",
+            },
+        fromPostId: {
+                type: DataTypes.INTEGER,
             },
         userId: {
             type: DataTypes.INTEGER,

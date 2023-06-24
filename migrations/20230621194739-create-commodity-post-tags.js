@@ -2,7 +2,7 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
     async up(queryInterface, Sequelize) {
-        await queryInterface.createTable("CommodityPostLikes", {
+        await queryInterface.createTable("CommodityPostTags", {
             id: {
                 allowNull: false,
                 autoIncrement: true,
@@ -12,13 +12,12 @@ module.exports = {
             postId: {
                 type: Sequelize.INTEGER,
                 references: {
-                    model: "CommodityPosts",
+                    model: "CommodityProducts",
                     key: "id",
                 },
                 allowNull: false,
                 onDelete: "CASCADE",
                 onUpdate: "CASCADE",
-                unique:false
             },
             userId: {
                 type: Sequelize.INTEGER,
@@ -30,7 +29,6 @@ module.exports = {
                 onDelete: "CASCADE",
                 onUpdate: "CASCADE",
             },
-
             createdAt: {
                 allowNull: false,
                 type: Sequelize.DATE,
@@ -42,6 +40,6 @@ module.exports = {
         });
     },
     async down(queryInterface, Sequelize) {
-        await queryInterface.dropTable("CommodityPostLikes");
+        await queryInterface.dropTable("CommodityPostTags");
     },
 };
