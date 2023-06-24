@@ -210,9 +210,12 @@ export default function mediaController(app: express.Application) {
     /////////////////// GET ALL POST BY A USER SESSION /////////////
 
     app.get(
-        "/api/media/posts/session/:userId",
+        "/api/media/posts/session/:userId/:pageNumber/:numberOfRecords",
         async (req: express.Request, res: express.Response) => {
-            const { userId } = req.params;
+            const { userId,numberOfRecords,pageNumber} = req.params;
+            let numRecs = Number(numberOfRecords)
+            let start = (Number(pageNumber) - 1) * numRecs;
+    
 
             try {
                 let ids = (
@@ -224,6 +227,8 @@ export default function mediaController(app: express.Application) {
                 const posts = await CommodityPost.findAll({
                     where: { userId: [...ids, userId] },
                     order: [["id", "DESC"]],
+                    limit:numRecs,
+                    offset:start
                 });
 
 
@@ -460,12 +465,16 @@ export default function mediaController(app: express.Application) {
     });
 
     // Get all comments for a specific post
-    app.get("/api/media/posts/:postId/comments/:userId", async (req, res) => {
-        const { postId,userId} = req.params;
+    app.get("/api/media/posts/:postId/comments/:userId/:pageNumber/:numberOfRecords", async (req, res) => {
+        const { postId,userId,pageNumber,numberOfRecords} = req.params;
+        let  numRecs = Number(numberOfRecords)
+        let start = (Number(pageNumber) - 1) * numRecs;
 
         try {
             const comments = await CommodityPostComment.findAll({
-                where: { postId },order:[["id","DESC"]]
+                where: { postId },order:[["id","DESC"]],
+                limit:numRecs,
+                offset:start
             });
 
             if(comments.length < 1){
@@ -500,12 +509,16 @@ export default function mediaController(app: express.Application) {
 
       ///////////// Get all replies for a specific comment ////////////////
 
-      app.get("/api/media/posts/comments/:commentId/replies/:userId", async (req, res) => {
-        const { commentId,userId } = req.params;
+      app.get("/api/media/posts/comments/:commentId/replies/:userId/:pageNumber/:numberOfRecords", async (req, res) => {
+        const { commentId,userId,pageNumber,numberOfRecords } = req.params;
+        let  numRecs = Number(numberOfRecords)
+        let start = (Number(pageNumber) - 1) * numRecs;
 
         try {
             const replies = await CommodityCommentReply.findAll({
-                where: { commentId },order:[["id","DESC"]]
+                where: { commentId },order:[["id","DESC"]],
+                limit:numRecs,
+                offset:start
             });
 
             if(replies.length < 1){
@@ -573,7 +586,7 @@ export default function mediaController(app: express.Application) {
         const { commentId, userId, text } = req.body;
 
         try {
-            const comment = await CommodityCommentReply.create({
+            const reply = await CommodityCommentReply.create({
                 commentId,
                 userId,
                 text,
@@ -583,7 +596,7 @@ export default function mediaController(app: express.Application) {
                 getResponseBody(
                     responseStatus.SUCCESS,
                     `Successsfully added a reply to commentId = ${commentId}`,
-                    comment
+                    reply
                 )
             );
         } catch (err) {
