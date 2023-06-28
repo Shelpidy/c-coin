@@ -321,30 +321,47 @@ export default function mediaController(app: express.Application) {
     /////////////////// GET ALL USER POSTS /////////////
 
     app.get(
-        "/api/media/posts/user/:userId",
+        "/api/media/posts/user/:userId/:pageNumber/:numberOfRecords",
         async (req: express.Request, res: express.Response) => {
-            const { userId } = req.params;
+            const { userId,pageNumber,numberOfRecords } = req.params;
+            let numRecs = Number(numberOfRecords)
+            let start = (Number(pageNumber) - 1) * numRecs;
 
             try {
-                // let ids = (
-                //     await CommodityFollower.findAll({
-                //         where: { followerId: userId },
-                //     })
-                // ).map((obj) => obj.getDataValue("followingId"));
-                //   console.log(ids)
-                const post = await CommodityPost.findAll({
+               
+                const posts = await CommodityPost.findAll({
                     where: { userId },
                     order: [["id", "DESC"]],
+                    limit:numRecs,
+                    offset:start
                 });
-                if (!post) {
+                if (!posts) {
                     return res.status(responseStatusCode.NOT_FOUND).json({
                         status: responseStatus.ERROR,
                         message: `Post with userId ${userId} does not exist`,
                     });
                 }
+                const postCLSCounts = await Promise.all(posts.map(async(post)=>{
+                    let comments = await CommodityPostComment.findAndCountAll({where:{postId:post.getDataValue("id")}})
+                    let likes = await CommodityPostLike.findAndCountAll({where:{postId:post.getDataValue("id")}})
+                    let shares = await CommodityPostShare.findAndCountAll({where:{postId:post.getDataValue("id")}})
+                    let user = await CommodityUser.findOne({where:{id:userId}})
+                    let secondUser = await CommodityUser.findOne({where:{id:post.getDataValue("fromId")}})
+                    let liked = likes.rows.some(like => like.getDataValue("userId") == userId)
+                    return {
+                        post:post.dataValues,
+                        commentsCount:comments.count,
+                        likesCount:likes.count,
+                        sharesCount:shares.count,
+                        user,
+                        secondUser,
+                        liked
+                    }
+                }))
+
                 res.status(responseStatusCode.OK).json({
                     status: responseStatus.SUCCESS,
-                    data: post,
+                    data: postCLSCounts,
                 });
             } catch (err) {
                 console.log(err);

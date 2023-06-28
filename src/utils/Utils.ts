@@ -289,11 +289,21 @@ export const buyCommodity = async(userId:any,amount:number)=>{
     }catch(err){
         throw err
     }
-   
-
-    
-    
+      
 }
+
+
+export function hasPassedOneMonth(date: Date): boolean {
+    const currentDate = new Date();
+    const oneMonthAgo = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, currentDate.getDate());
+    return date < oneMonthAgo;
+  }
+  
+  // Example usage
+  const inputDate = new Date("2023-06-01");
+  const result = hasPassedOneMonth(inputDate);
+  console.log(result); // true or false
+  
 
 export const transferCommodity = async (
     request: express.Request,

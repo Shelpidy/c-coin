@@ -2,6 +2,7 @@ import express from "express";
 import CommodityPost from "../models/ComPosts";
 import {
     getResponseBody,
+    hasPassedOneMonth,
     makePurchacePayment,
     responseStatus,
     responseStatusCode,
@@ -16,6 +17,7 @@ import type { MakePurchaseParams } from "../utils/Utils.d";
 import CommodityProductRequest from "../models/ComProductRequests";
 import { CommodityUser } from "../models/ComUsers";
 import { CommodityNotification } from "../models/ComNotifications";
+import CommodityProductReview from "../models/ComProductReviews";
 
 export default function MarketingController(app: express.Application) {
     /////////////////////////// GET USERS AFFILIATED PRODUCTS /////////////////////////////
@@ -215,11 +217,11 @@ export default function MarketingController(app: express.Application) {
     ////////////////////// GET ONE PRODUCT BY PRODUCT ID ////////////////////////////////
 
     app.get(
-        "/api/marketing/products/:productId",
+        "/api/marketing/products/:productId/:userId",
         async (req: express.Request, res: express.Response) => {
-            const { productId } = req.params;
+            const { productId,userId } = req.params;
             try {
-                let affiliateIdsId = (
+                let affiliateIds = (
                     await CommodityProductAffiliate.findAll({
                         where: { productId },
                     })
@@ -234,11 +236,23 @@ export default function MarketingController(app: express.Application) {
                         message: `Products with productId ${productId} does not exist`,
                     });
                 }
+                let likes = await CommodityProductLike.findAndCountAll({where:{productId:product.getDataValue("id")}})
+                let reviews = await CommodityProductReview.findAndCountAll({where:{productId:product.getDataValue("id")}})
+                let user = await CommodityUser.findOne({where:{id:product.getDataValue("userId")}})
+                let hasReviewed = await CommodityProductReview.findOne({where:{userId}})
+                let liked = likes.rows.some(like => like.getDataValue("userId") == userId)
+                let isNew = !hasPassedOneMonth(product.getDataValue("createdAt"))
                 res.status(responseStatusCode.OK).json({
                     status: responseStatus.SUCCESS,
                     data: {
-                        ...product.dataValues,
-                        affiliateId: affiliateIdsId,
+                        product:product.dataValues,
+                        previewsCount:reviews.count,
+                        likesCount:likes.count,
+                        user,
+                        liked,
+                        isNew,
+                        previewed:hasReviewed?true:false,
+                        affiliateIds
                     },
                 });
             } catch (err) {
@@ -253,12 +267,38 @@ export default function MarketingController(app: express.Application) {
 
     //////////////////////////// Get all products //////////////////////////
 
-    app.get("/api/marketing/products", async (req, res) => {
+    app.get("/api/marketing/products/:userId/:pageNumber/:numberOfRecords", async (req, res) => {
         try {
-            const products = await CommodityProduct.findAll();
+            const { userId,pageNumber,numberOfRecords } = req.params;
+            let numRecs = Number(numberOfRecords)
+            let start = (Number(pageNumber) - 1) * numRecs;
+            const products = await CommodityProduct.findAll({limit:numRecs,
+                offset:start,order:[["id","DESC"]]});
+            if (!products) {
+                return res.status(responseStatusCode.NOT_FOUND).json({
+                    status: responseStatus.ERROR,
+                    message: `No products`,
+                });
+            }
+            const productsReturnValue = await Promise.all(products.map(async(product)=>{
+                // let comments = await CommodityproductComment.findAndCountAll({where:{productId:product.getDataValue("id")}})
+                let likes = await CommodityProductLike.findAndCountAll({where:{productId:product.getDataValue("id")}})
+                let reviews = await CommodityProductReview.findAndCountAll({where:{productId:product.getDataValue("id")}})
+                let user = await CommodityUser.findOne({where:{id:product.getDataValue("userId")}})
+                let liked = likes.rows.some(like => like.getDataValue("userId") == userId)
+                let isNew = !hasPassedOneMonth(product.getDataValue("createdAt"))
+                return {
+                    product:product.dataValues,
+                    previewsCount:reviews.count,
+                    likesCount:likes.count,
+                    user,
+                    liked,
+                    isNew
+                }
+            }))
             res.status(responseStatusCode.OK).json({
                 status: responseStatus.SUCCESS,
-                data: products,
+                data: productsReturnValue,
             });
         } catch (err) {
             console.log(err);
@@ -271,11 +311,11 @@ export default function MarketingController(app: express.Application) {
 
     //////////// Get all user products by userId and products followings //////////
     app.get(
-        "/api/marketing/products/session/:userId",
+        "/api/marketing/products/session/:userId/:pageNumber/:numberOfRecords",
         async (req: express.Request, res: express.Response) => {
-            const { userId } = req.params;
 
             try {
+                const { userId,pageNumber,numberOfRecords } = req.params;
                 let ids = (
                     await CommodityFollower.findAll({
                         where: { followerId: userId },
@@ -525,11 +565,15 @@ export default function MarketingController(app: express.Application) {
     app.put("/api/marketing/products/likes/", async (req, res) => {
         const { userId, productId } = req.body;
         try {
-            const follow = await CommodityProductLike.findOne({
+            const like = await CommodityProductLike.findOne({
                 where: { userId, productId },
             });
 
-            if (follow) {
+            const likes = await CommodityProductLike.findAndCountAll({
+                where: { productId },
+            });
+
+            if (like) {
                 let affectedRow = await CommodityProductLike.destroy({
                     where: { userId, productId },
                 });
@@ -539,7 +583,7 @@ export default function MarketingController(app: express.Application) {
                         .json(
                             getResponseBody(
                                 responseStatus.UNPROCESSED,
-                                "Fail to unlike a product"
+                                "Fail to unlike a post"
                             )
                         );
                 }
@@ -549,11 +593,11 @@ export default function MarketingController(app: express.Application) {
                         getResponseBody(
                             responseStatus.SUCCESS,
                             "unliked a product successfully",
-                            { affectedRow }
+                            { affectedRow,liked:false,numberOfLikes:likes.count - 1 }
                         )
                     );
             }
-            const newFollow = await CommodityProductLike.create({
+            const newLike = await CommodityProductLike.create({
                 userId,
                 productId,
                 createdAt: new Date(),
@@ -561,8 +605,8 @@ export default function MarketingController(app: express.Application) {
             res.status(responseStatusCode.CREATED).json(
                 getResponseBody(
                     responseStatus.SUCCESS,
-                    "Liked a post sucessfully",
-                    newFollow
+                    "Liked a product sucessfully",
+                    { affectedRow:1,liked:true,numberOfLikes:likes.count + 1}
                 )
             );
         } catch (err) {
@@ -729,4 +773,33 @@ export default function MarketingController(app: express.Application) {
             }
         }
     );
+
+    ////////////////////////// ADD PRODUCT REVIEW //////////////////////////////
+
+    app.post("/api/marketing/products/reviews/", async (req, res) => {
+        const { productId, userId} = req.body;
+
+        try {
+            const review = await CommodityProductReview.create({
+                productId,
+                userId,
+                createdAt: new Date(),
+            });
+            let reviews = await CommodityProductReview.findAndCountAll({where:{id:productId}})
+     
+            res.status(responseStatusCode.CREATED).json(
+                getResponseBody(
+                    responseStatus.SUCCESS,
+                    `Successsfully reviewd a productId = ${productId}`,
+                     {reviewed:true,reviewsCount:reviews.count}
+                )
+            );
+        } catch (err) {
+            console.log(err);
+            res.status(responseStatusCode.BAD_REQUEST).json(
+                getResponseBody(responseStatus.ERROR, "", err)
+            );
+        }
+    });
+
 }
