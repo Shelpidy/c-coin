@@ -169,40 +169,57 @@ export default function MarketingController(app: express.Application) {
     ///////////////////// GET ALL USER PRODUCTS /////////////////////
 
     app.get(
-        "/api/marketing/products/user/:userId",
+        "/api/marketing/products/user/:userId/:currentUserId/:pageNumber/:numberOfRecords",
         async (req: express.Request, res: express.Response) => {
-            const { userId } = req.params;
+            const { userId,currentUserId,pageNumber,numberOfRecords  } = req.params;
             try {
-                let usersId = (
+                let numRecs = Number(numberOfRecords)
+                let start = (Number(pageNumber) - 1) * numRecs;
+                let userIds = (
                     await CommodityProductAffiliate.findAll({
                         attributes: ["userId"],
                         where: { affiliateId: userId },
                     })
                 ).map((obj) => obj.getDataValue("userId"));
-                console.log("Other users", usersId);
-                const products = (
-                    await CommodityProduct.findAll({
-                        where: { userId: [...usersId, userId] },
+
+                console.log("Other users", userIds);
+                const products = ( await CommodityProduct.findAll({
+                        where: { userId: [...userIds, userId] },
                         order: [["id", "DESC"]],
-                    })
-                ).map((product) => {
+                    }))
+
+                let newProducts = await Promise.all(products.map(async(product) => {
+                    let likes = await CommodityProductLike.findAndCountAll({where:{productId:product.getDataValue("id")}})
+                    let reviews = await CommodityProductReview.findAndCountAll({where:{productId:product.getDataValue("id")}})
+                    let user = await CommodityUser.findOne({where:{id:product.getDataValue("userId")}})
+                    let liked = likes.rows.some(like => like.getDataValue("userId") == currentUserId)
+                    let isNew = !hasPassedOneMonth(product.getDataValue("createdAt"))
+
                     if (product.getDataValue("userId") != userId) {
                         return {
-                            ...product.dataValues,
-                            affiliateId: [Number(userId)],
-                        };
+                        product:product.dataValues,
+                        previewsCount:reviews.count,
+                        likesCount:likes.count,
+                        user,
+                        liked,
+                        isNew,
+                        affiliateId:userId
+                        }
                     }
-                    return { ...product.dataValues, affiliateId: null };
-                });
-                if (!products) {
-                    return res.status(responseStatusCode.NOT_FOUND).json({
-                        status: responseStatus.ERROR,
-                        message: `Products with userId ${userId} does not exist`,
-                    });
-                }
+                    return {
+                        product:product.dataValues,
+                        previewsCount:reviews.count,
+                        likesCount:likes.count,
+                        user,
+                        liked,
+                        isNew,
+                        affiliateId:null
+                    };
+                }));
+               
                 res.status(responseStatusCode.OK).json({
                     status: responseStatus.SUCCESS,
-                    data: products,
+                    data: newProducts,
                 });
             } catch (err) {
                 console.log(err);
@@ -217,15 +234,13 @@ export default function MarketingController(app: express.Application) {
     ////////////////////// GET ONE PRODUCT BY PRODUCT ID ////////////////////////////////
 
     app.get(
-        "/api/marketing/products/:productId/:userId",
+        "/api/marketing/products/product/:productId/:userId/:currentUserId/:pageNumber/:numberOfRecords",
         async (req: express.Request, res: express.Response) => {
-            const { productId,userId } = req.params;
+            const { productId,userId} = req.params;
             try {
-                let affiliateIds = (
-                    await CommodityProductAffiliate.findAll({
-                        where: { productId },
-                    })
-                ).map((obj) => obj.getDataValue("affiliateId"));
+                let affiliateId = await CommodityProductAffiliate.findOne({
+                        where: { productId,affiliateId:userId },
+                    });
                 // console.log("Other affiliateIds",affiliateIdsId)
                 const product = await CommodityProduct.findOne({
                     where: { id: productId },
@@ -252,7 +267,7 @@ export default function MarketingController(app: express.Application) {
                         liked,
                         isNew,
                         previewed:hasReviewed?true:false,
-                        affiliateIds
+                        affiliated:affiliateId?true:false
                     },
                 });
             } catch (err) {
@@ -293,7 +308,8 @@ export default function MarketingController(app: express.Application) {
                     likesCount:likes.count,
                     user,
                     liked,
-                    isNew
+                    isNew,
+                    affiliateId:null
                 }
             }))
             res.status(responseStatusCode.OK).json({
@@ -602,7 +618,7 @@ export default function MarketingController(app: express.Application) {
                 productId,
                 createdAt: new Date(),
             });
-            res.status(responseStatusCode.CREATED).json(
+            res.status(responseStatusCode.ACCEPTED).json(
                 getResponseBody(
                     responseStatus.SUCCESS,
                     "Liked a product sucessfully",
