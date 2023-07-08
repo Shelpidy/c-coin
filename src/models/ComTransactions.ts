@@ -11,16 +11,19 @@ CommodityTransaction.init(
             primaryKey: true,
             type: DataTypes.INTEGER,
         },
-        transferorAccountNumber: {
+        senderAddress: {
             type: DataTypes.STRING,
         },
-        transfereeAccountNumber: {
+        recipientAddress: {
             type: DataTypes.STRING,
         },
         amount: {
             type: DataTypes.STRING,
         },
-        transactionId: {
+        hash: {
+            type: DataTypes.STRING,
+        },
+        previousTransactionHash:{
             type: DataTypes.STRING,
         },
         createdAt: {

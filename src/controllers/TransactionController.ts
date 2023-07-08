@@ -1,77 +1,45 @@
 import express from "express";
 import { Commodity } from "../models/Commodities";
 import { CommodityTransaction } from "../models/ComTransactions";
-import { CommodityUser } from "../models/ComUsers";
 import {
     buyCommodity,
     getPhoneNumberCompany,
     responseStatus,
     responseStatusCode,
-    transferCommodity,
 } from "../utils/Utils";
-import { v4 } from "uuid";
-import { CommodityNotificationDetail } from "../models/ComNotificationDetails";
-import { CommodityNotification } from "../models/ComNotifications";
+
 import NotificationService from "../services/NotificationService";
-import { compareSync } from "bcrypt";
+
+import { Op } from "sequelize";
+import cryptoJs from "crypto-js"
+import { runBuyCommodityProducer, runTransferCommodityProducer } from "../events/producers";
 
 let notification = new NotificationService();
 
 export default (router: express.Application) => {
     router.post(
-        "/api/transactions/sendcommodity",
+        "/api/tx/sendcommodity",
         async (request: express.Request, response: express.Response) => {
             try {
                 let {
-                    transfereeAccountNumber,
-                    transferorAccountNumber,
+                    senderAddress,
+                    recipientAddress,
                     amount: _amount,
                 } = request.body;
                 let amount = Math.abs(_amount);
-                let transfereeId = (
-                    await CommodityUser.findOne({
-                        where: { accountNumber: transfereeAccountNumber },
-                    })
-                )?.getDataValue("id");
-                let transferorId = (
-                    await CommodityUser.findOne({
-                        where: { accountNumber: transferorAccountNumber },
-                    })
-                )?.getDataValue("id");
-                if (!transfereeId) {
-                    response
-                        .status(responseStatusCode.UNPROCESSIBLE_ENTITY)
-                        .json({
-                            status: responseStatus.UNPROCESSED,
-                            message: `The transferee account number ${transfereeAccountNumber} does not exist.`,
-                        });
-                    return;
-                }
+                let date = new Date()
+               
+                // let transfereeNotificationTokens = JSON.parse((await CommodityNotificationDetail.findOne({where:{address:senderAddress}}))?.getDataValue("notificationToken"))
 
-                if (!transferorId) {
-                    response
-                        .status(responseStatusCode.UNPROCESSIBLE_ENTITY)
-                        .json({
-                            status: responseStatus.UNPROCESSED,
-                            message: `The transferor account number ${transferorAccountNumber} does not exist.`,
-                        });
-                    return;
-                }
-
-                // let transfereeNotificationTokens = JSON.parse((await CommodityNotificationDetail.findOne({where:{userId:transfereeAccountNumber}}))?.getDataValue("notificationToken"))
-                let transfereeNotificationBody = `You have seccessfully received an amount of C${amount} from an account ${transferorAccountNumber}`;
-                let transferorNotificationBody = `You have seccessfully sent an amount of C${amount} to the account number ${transfereeAccountNumber}`;
-                let responseMessage = `You have seccessfully sent an amount of C${amount} from the account number ${transferorAccountNumber} to the account number ${transfereeAccountNumber}`;
-
-                let notificationTitle = "Commodity Transaction";
+                let responseMessage = `You have seccessfully sent an amount of C${amount} from the account number ${recipientAddress} to the account number ${senderAddress}`;
 
                 let createdAt = new Date();
                 try {
                     let transfereeAcc = await Commodity.findOne({
-                        where: { userId: transfereeId },
+                        where: { address: senderAddress },
                     });
                     let transferorAcc = await Commodity.findOne({
-                        where: { userId: transferorId },
+                        where: { address: recipientAddress },
                     });
                     if (transferorAcc) {
                         let balance: number = Number(
@@ -82,8 +50,6 @@ export default (router: express.Application) => {
                             if (transfereeAcc) {
                                 let newTransfereeBalance;
                                 let newTransferorBalance;
-                                let transferorNotDetailRecord;
-                                let transfereeNotDetailRecord;
                                 let transactionRecord;
                                 try {
                                     newTransfereeBalance =
@@ -96,38 +62,24 @@ export default (router: express.Application) => {
                                             "balance",
                                             { by: amount }
                                         );
-                                    let transactionId = v4();
-                                    console.log(
-                                        "Transaction ID: ",
-                                        transactionId
-                                    );
-
-                                    transactionRecord =
-                                        new CommodityTransaction({
-                                            transfereeAccountNumber,
-                                            transferorAccountNumber,
+                                        let transObj = {
+                                            recipientAddress,
+                                            senderAddress,
                                             amount: String(amount),
-                                            transactionId,
-                                            createdAt,
-                                        });
-
-                                    transferorNotDetailRecord =
-                                        new CommodityNotification({
-                                            userId: transferorId,
-                                            notificationFrom: transfereeId,
-                                            message: transferorNotificationBody,
-                                            title: notificationTitle,
-                                            notificationType: "transaction",
-                                            createdAt,
-                                        });
-                                    transfereeNotDetailRecord =
-                                        new CommodityNotification({
-                                            userId: transfereeId,
-                                            notificationFrom: transferorId,
-                                            message: transfereeNotificationBody,
-                                            title: notificationTitle,
-                                            notificationType: "transaction",
-                                            createdAt,
+                                            date
+                                        }
+                                        let previousTransactionHash = (await CommodityTransaction.findOne({
+                                            order:[["createdAt","DESC"]]
+                                        }))?.getDataValue("hash")
+                                        let hash = cryptoJs.SHA256(JSON.stringify(transObj)).toString();
+                                        console.log("Transaction Hash: ", hash);
+                                        transactionRecord = new CommodityTransaction({
+                                            recipientAddress,
+                                            senderAddress,
+                                            amount: String(amount),
+                                            hash,
+                                            previousTransactionHash,
+                                            createdAt:date,
                                         });
 
                                     let transfereeBalance =
@@ -135,12 +87,17 @@ export default (router: express.Application) => {
                                     let transferorBalance =
                                         await newTransferorBalance.save();
                                     await transactionRecord.save();
-                                    await transferorNotDetailRecord.save();
-                                    await transfereeNotDetailRecord.save();
-                                    await notification.sendNotification();
 
+
+                                    //// SEND AN EVENTS TO THE OTHER SERVERS
+                                    try{
+                                        await runTransferCommodityProducer({senderAddress,recipientAddress,amount:Number(amount),date})
+                                    }
+                                    catch(err){
+                                        console.log("Error from other servers",err)
+                                    }
                                     response
-                                        .status(responseStatusCode.ACCEPTED)
+                                        .status(responseStatusCode.CREATED)
                                         .json({
                                             status: responseStatus.SUCCESS,
                                             message: responseMessage,
@@ -166,8 +123,6 @@ export default (router: express.Application) => {
                                     await newTransfereeBalance?.reload();
                                     await newTransfereeBalance?.reload();
                                     await transactionRecord?.reload();
-                                    await transferorNotDetailRecord?.reload();
-                                    await transfereeNotDetailRecord?.reload();
                                     response
                                         .status(
                                             responseStatusCode.UNPROCESSIBLE_ENTITY
@@ -180,13 +135,11 @@ export default (router: express.Application) => {
                             } else {
                                 let newTransfereeBalance;
                                 let newTransferorBalance;
-                                let transferorNotDetailRecord;
-                                let transfereeNotDetailRecord;
                                 let transactionRecord;
 
                                 try {
                                     newTransfereeBalance = new Commodity({
-                                        userId: transfereeId,
+                                        address: recipientAddress,
                                         balance: amount,
                                         createdAt,
                                     });
@@ -195,36 +148,24 @@ export default (router: express.Application) => {
                                             "balance",
                                             { by: amount }
                                         );
-                                    let transactionId = v4();
-                                    console.log(
-                                        "Transaction ID: ",
-                                        transactionId
-                                    );
-                                    transactionRecord =
-                                        new CommodityTransaction({
-                                            transfereeAccountNumber,
-                                            transferorAccountNumber,
+                                        let transObj = {
+                                            recipientAddress,
+                                            senderAddress,
                                             amount: String(amount),
-                                            transactionId,
-                                            createdAt,
-                                        });
-                                    transferorNotDetailRecord =
-                                        new CommodityNotification({
-                                            userId: transferorId,
-                                            message: transferorNotificationBody,
-                                            notificationFrom: transfereeId,
-                                            title: "Commodity Transaction",
-                                            notificationType: "transaction",
-                                            createdAt,
-                                        });
-                                    transfereeNotDetailRecord =
-                                        new CommodityNotification({
-                                            userId: transfereeId,
-                                            message: transfereeNotificationBody,
-                                            notificationFrom: transferorId,
-                                            title: "Commodity Transaction",
-                                            notificationType: "transaction",
-                                            createdAt,
+                                            date
+                                        }
+                                        let previousTransactionHash = (await CommodityTransaction.findOne({
+                                            order:[["createdAt","DESC"]]
+                                        }))?.getDataValue("hash")
+                                        let hash = cryptoJs.SHA256(JSON.stringify(transObj)).toString();
+                                        console.log("Transaction Hash: ", hash);
+                                        transactionRecord = new CommodityTransaction({
+                                            recipientAddress,
+                                            senderAddress,
+                                            amount: String(amount),
+                                            hash,
+                                            previousTransactionHash,
+                                            createdAt:date,
                                         });
 
                                     let _newTransfereeBalance =
@@ -232,12 +173,21 @@ export default (router: express.Application) => {
                                     let _newTransferorBalance =
                                         await newTransferorBalance.save();
                                     await transactionRecord.save();
-                                    await transferorNotDetailRecord.save();
-                                    await transfereeNotDetailRecord.save();
                                     await notification.sendNotification();
 
+                                     //// SEND AN EVENTS TO THE OTHER SERVERS
+
+                                     try{
+                                        await runTransferCommodityProducer({senderAddress,recipientAddress,amount:Number(amount),date})
+
+                                    }
+                                    catch(err){
+                                        console.log("Error from other servers",err)
+                                    }
+
+
                                     response
-                                        .status(responseStatusCode.ACCEPTED)
+                                        .status(responseStatusCode.CREATED)
                                         .json({
                                             status: responseStatus.SUCCESS,
                                             message: responseMessage,
@@ -263,8 +213,6 @@ export default (router: express.Application) => {
                                     await newTransfereeBalance?.reload();
                                     await newTransfereeBalance?.reload();
                                     await transactionRecord?.reload();
-                                    await transferorNotDetailRecord?.reload();
-                                    await transfereeNotDetailRecord?.reload();
                                     response
                                         .status(
                                             responseStatusCode.UNPROCESSIBLE_ENTITY
@@ -288,7 +236,7 @@ export default (router: express.Application) => {
                             .status(responseStatusCode.UNPROCESSIBLE_ENTITY)
                             .json({
                                 status: responseStatus.UNPROCESSED,
-                                message: `Transferor account with ${transferorId} have C 0.00 balance`,
+                                message: `Transferor account with ${senderAddress} have C 0.00 balance`,
                             });
                     }
                 } catch (err) {
@@ -306,288 +254,12 @@ export default (router: express.Application) => {
                 });
             }
         }
-        // async (request: express.Request, response: express.Response) => {
-        //     try {
-        //         let {
-        //             transfereeAccountNumber,
-        //             transferorAccountNumber,
-        //             amount: _amount,
-        //         } = request.body;
-        //         let amount = Math.abs(_amount);
-        //         let transfereeId = (
-        //             await CommodityUser.findOne({
-        //                 where: { accountNumber: transfereeAccountNumber },
-        //             })
-        //         )?.getDataValue("id");
-        //         let transferorId = (
-        //             await CommodityUser.findOne({
-        //                 where: { accountNumber: transferorAccountNumber },
-        //             })
-        //         )?.getDataValue("id");
-        //         if (!transfereeId) {
-        //             response
-        //                 .status(responseStatusCode.UNPROCESSIBLE_ENTITY)
-        //                 .json({
-        //                     status: responseStatus.UNPROCESSED,
-        //                     message: `The transferee account number ${transfereeAccountNumber} does not exist.`,
-        //                 });
-        //             return;
-        //         }
-
-        //         if (!transferorId) {
-        //             response
-        //                 .status(responseStatusCode.UNPROCESSIBLE_ENTITY)
-        //                 .json({
-        //                     status: responseStatus.UNPROCESSED,
-        //                     message: `The transferor account number ${transferorAccountNumber} does not exist.`,
-        //                 });
-        //             return;
-        //         }
-
-        //         // let transfereeNotificationTokens = JSON.parse((await CommodityNotificationDetail.findOne({where:{userId:transfereeAccountNumber}}))?.getDataValue("notificationToken"))
-        //         let transfereeNotificationBody = `You have seccessfully received an amount of ${amount} from an account account ${transferorAccountNumber}`;
-        //         let transferorNotificationBody = `You have seccessfully sent an amount of ${amount} to the account number ${transfereeAccountNumber}`;
-        //         let responseMessage = `You have seccessfully sent an amount of ${amount} from the account number ${transferorAccountNumber} to the account number ${transfereeAccountNumber}`;
-
-        //         let notificationTitle = "Transaction";
-
-        //         let createdAt = new Date();
-        //         try {
-        //             let transfereeAcc = await Commodity.findOne({
-        //                 where: { userId: transfereeId },
-        //             });
-        //             let transferorAcc = await Commodity.findOne({
-        //                 where: { userId: transferorId },
-        //             });
-        //             if (transferorAcc) {
-        //                 let balance: number = Number(
-        //                     transferorAcc.get("balance")
-        //                 );
-        //                 console.log(balance);
-        //                 if (balance >= amount) {
-        //                     if (transfereeAcc) {
-        //                         let newTransfereeBalance;
-        //                         let newTransferorBalance;
-        //                         let transferorNotDetailRecord;
-        //                         let transfereeNotDetailRecord;
-        //                         let transactionRecord;
-        //                         try {
-        //                             newTransfereeBalance =
-        //                                 await transfereeAcc.increment(
-        //                                     "balance",
-        //                                     { by: amount }
-        //                                 );
-        //                             newTransferorBalance =
-        //                                 await transferorAcc.decrement(
-        //                                     "balance",
-        //                                     { by: amount }
-        //                                 );
-        //                             let transactionId = v4();
-        //                             console.log(
-        //                                 "Transaction ID: ",
-        //                                 transactionId
-        //                             );
-        //                             transactionRecord =
-        //                                 new CommodityTransaction({
-        //                                     transfereeAccountNumber,
-        //                                     transferorAccountNumber,
-        //                                     amount: String(amount),
-        //                                     transactionId,
-        //                                     createdAt,
-        //                                 });
-        //                             transferorNotDetailRecord =
-        //                                 new CommodityNotification({
-        //                                     userId: transferorId,
-        //                                     message: transferorNotificationBody,
-        //                                     title: notificationTitle,
-        //                                     createdAt,
-        //                                 });
-        //                             transfereeNotDetailRecord =
-        //                                 new CommodityNotification({
-        //                                     userId: transfereeId,
-        //                                     message: transfereeNotificationBody,
-        //                                     title: notificationTitle,
-        //                                     createdAt,
-        //                                 });
-
-        //                             let transfereeBalance =
-        //                                 await newTransfereeBalance.save();
-        //                             let transferorBalance =
-        //                                 await newTransferorBalance.save();
-        //                             await transactionRecord.save();
-        //                             await transferorNotDetailRecord.save();
-        //                             await transfereeNotDetailRecord.save();
-        //                             await notification.sendNotification();
-
-        //                             response
-        //                                 .status(responseStatusCode.ACCEPTED)
-        //                                 .json({
-        //                                     status: responseStatus.SUCCESS,
-        //                                     message: responseMessage,
-        //                                     data: {
-        //                                         transferorBalance: {
-        //                                             ...transferorBalance.dataValues,
-        //                                             balance:
-        //                                                 transferorBalance.getDataValue(
-        //                                                     "balance"
-        //                                                 ) - amount,
-        //                                         },
-        //                                         transfereeBalance: {
-        //                                             ...transfereeBalance.dataValues,
-        //                                             balance:
-        //                                                 transfereeBalance.getDataValue(
-        //                                                     "balance"
-        //                                                 ) + amount,
-        //                                         },
-        //                                     },
-        //                                 });
-        //                         } catch (err) {
-        //                             console.log(err);
-        //                             await newTransfereeBalance?.reload();
-        //                             await newTransfereeBalance?.reload();
-        //                             await transactionRecord?.reload();
-        //                             await transferorNotDetailRecord?.reload();
-        //                             await transfereeNotDetailRecord?.reload();
-        //                             response
-        //                                 .status(
-        //                                     responseStatusCode.UNPROCESSIBLE_ENTITY
-        //                                 )
-        //                                 .json({
-        //                                     status: responseStatus.UNPROCESSED,
-        //                                     data: err,
-        //                                 });
-        //                         }
-        //                     } else {
-        //                         let newTransfereeBalance;
-        //                         let newTransferorBalance;
-        //                         let transferorNotDetailRecord;
-        //                         let transfereeNotDetailRecord;
-        //                         let transactionRecord;
-
-        //                         try {
-        //                             newTransfereeBalance = new Commodity({
-        //                                 userId: transfereeId,
-        //                                 balance: amount,
-        //                                 createdAt,
-        //                             });
-        //                             newTransferorBalance =
-        //                                 await transferorAcc.decrement(
-        //                                     "balance",
-        //                                     { by: amount }
-        //                                 );
-        //                             let transactionId = v4();
-        //                             console.log(
-        //                                 "Transaction ID: ",
-        //                                 transactionId
-        //                             );
-        //                             transactionRecord =
-        //                                 new CommodityTransaction({
-        //                                     transfereeAccountNumber,
-        //                                     transferorAccountNumber,
-        //                                     amount: String(amount),
-        //                                     transactionId,
-        //                                     createdAt,
-        //                                 });
-        //                             transferorNotDetailRecord =
-        //                                 new CommodityNotification({
-        //                                     userId: transferorId,
-        //                                     message: transferorNotificationBody,
-        //                                     title: "Transaction",
-        //                                     createdAt,
-        //                                 });
-        //                             transfereeNotDetailRecord =
-        //                                 new CommodityNotification({
-        //                                     userId: transfereeId,
-        //                                     message: transfereeNotificationBody,
-        //                                     title: "Transaction",
-        //                                     createdAt,
-        //                                 });
-
-        //                             let _newTransfereeBalance =
-        //                                 await newTransfereeBalance.save();
-        //                             let _newTransferorBalance =
-        //                                 await newTransferorBalance.save();
-        //                             await transactionRecord.save();
-        //                             await transferorNotDetailRecord.save();
-        //                             await transfereeNotDetailRecord.save();
-        //                             await notification.sendNotification();
-
-        //                             response
-        //                                 .status(responseStatusCode.ACCEPTED)
-        //                                 .json({
-        //                                     status: responseStatus.SUCCESS,
-        //                                     message: responseMessage,
-        //                                     data: {
-        //                                         transferorBalance: {
-        //                                             ..._newTransferorBalance.dataValues,
-        //                                             balance:
-        //                                                 _newTransferorBalance.getDataValue(
-        //                                                     "balance"
-        //                                                 ),
-        //                                         },
-        //                                         transfereeBalance: {
-        //                                             ..._newTransfereeBalance.dataValues,
-        //                                             balance:
-        //                                                 _newTransfereeBalance.getDataValue(
-        //                                                     "balance"
-        //                                                 ) + amount,
-        //                                         },
-        //                                     },
-        //                                 });
-        //                         } catch (err) {
-        //                             console.log(err);
-        //                             await newTransfereeBalance?.reload();
-        //                             await newTransfereeBalance?.reload();
-        //                             await transactionRecord?.reload();
-        //                             await transferorNotDetailRecord?.reload();
-        //                             await transfereeNotDetailRecord?.reload();
-        //                             response
-        //                                 .status(
-        //                                     responseStatusCode.UNPROCESSIBLE_ENTITY
-        //                                 )
-        //                                 .json({
-        //                                     status: responseStatus.UNPROCESSED,
-        //                                     data: err,
-        //                                 });
-        //                         }
-        //                     }
-        //                 } else {
-        //                     response
-        //                         .status(responseStatusCode.UNPROCESSIBLE_ENTITY)
-        //                         .json({
-        //                             status: responseStatus.UNPROCESSED,
-        //                             message: `You have insufficinet amount to transfer the amount ${amount}`,
-        //                         });
-        //                 }
-        //             } else {
-        //                 response
-        //                     .status(responseStatusCode.UNPROCESSIBLE_ENTITY)
-        //                     .json({
-        //                         status: responseStatus.UNPROCESSED,
-        //                         message: `Transferor account with ${transferorId} have C 0.00 balance`,
-        //                     });
-        //             }
-        //         } catch (err) {
-        //             console.log(err);
-        //             response.status(responseStatusCode.BAD_REQUEST).json({
-        //                 status: responseStatus.ERROR,
-        //                 data: err,
-        //             });
-        //         }
-        //     } catch (err) {
-        //         console.log(err);
-        //         response.status(responseStatusCode.BAD_REQUEST).json({
-        //             status: responseStatus.ERROR,
-        //             data: err,
-        //         });
-        //     }
-        // }
-    );
+    )
 
     //////////////////////// GET ALL TRANSACTIONS ///////////////////////////////////
 
     router.get(
-        "/api/transactions/",
+        "/api/tx/",
         async (request: express.Request, response: express.Response) => {
             try {
                 let transactions = await CommodityTransaction.findAll();
@@ -605,23 +277,18 @@ export default (router: express.Application) => {
         }
     );
 
-    /////////////////// GET TRANSACTIONS BY EMAIL //////////////////////////
+    /////////////////// GET TRANSACTIONS BY ADDRESS //////////////////////////
 
     router.get(
-        "/api/transactions/:userId",
+        "/api/tx/:address",
         async (request: express.Request, response: express.Response) => {
             try {
-                let userId = request.params.userId;
-                let accNumber = (
-                    await CommodityUser.findOne({ where: { userId } })
-                )?.getDataValue("accountNumber");
-                let trans = await CommodityTransaction.findAll({
-                    where: { transfereeAccountNumber: accNumber },
+                let address = request.params.address;
+               
+                let transactions = await CommodityTransaction.findAll({
+                    where:{[Op.or]:[{senderAddress:address},{recipientAddress:address}]},
                 });
-                let receive = await CommodityTransaction.findAll({
-                    where: { transferorAccountNumber: accNumber },
-                });
-                let transactions = [...trans, ...receive];
+               
                 response.status(responseStatusCode.OK).json({
                     status: responseStatus.SUCCESS,
                     data: transactions,
@@ -639,7 +306,7 @@ export default (router: express.Application) => {
     ////////////////////////// DELETE A TRANSACTION HISTORY ///////////////////////
 
     router.delete(
-        "/api/transactions/:id",
+        "/api/tx/:id",
         async (request: express.Request, response: express.Response) => {
             try {
                 let id = request.params.id;
@@ -675,31 +342,55 @@ export default (router: express.Application) => {
 
 
     router.post(
-        "/api/transactions/buycommodity/",
+        "/api/tx/buycommodity/",
         async (request: express.Request, response: express.Response) => {
             try {
-                let { phoneNumber, userId,amount,pinCode} = request.body;
+                let { phoneNumber, address,amount,pinCode} = request.body;
                 let phoneNumberCompany = await getPhoneNumberCompany(
                     phoneNumber
                 );
+                let date = new Date()
                 let message = `You have seccessfully bought an amount of c${amount} from the number ${phoneNumber} and telecommunication company ${phoneNumberCompany}`;
                 if (phoneNumberCompany == "africell") {
                     // 1. CONTACT TELECOMMUNICATION COMPANY TO DO THE CURENCY EXCHANGE
                     // 2. COMMODITY BALANCE UPDATED
-                    await buyCommodity(userId,amount)
-                    response.status(responseStatusCode.ACCEPTED).json({
+                    await buyCommodity(address,amount,date)
+
+                    //// SEND AN EVENT TO THE OTHER SERVERS 
+                    try{
+                        await runBuyCommodityProducer({address,amount,date})
+                    }
+                    catch(err){
+                        console.log("Error from other servers",err)
+                    }
+
+                    response.status(responseStatusCode.CREATED).json({
                         status: responseStatus.SUCCESS,
                         message,
                     });
                 } else if (phoneNumberCompany == "qcell") {
-                    await buyCommodity(userId,amount)
-                    response.status(responseStatusCode.ACCEPTED).json({
+
+                    await buyCommodity(address,amount,date)
+                    //// SEND AN EVENT TO THE OTHER SERVERS 
+                    await runBuyCommodityProducer({address,amount,date})
+
+                    response.status(responseStatusCode.CREATED).json({
                         status: responseStatus.SUCCESS,
                         message,
                     });
                 } else {
-                    await buyCommodity(userId,amount)
-                    response.status(responseStatusCode.ACCEPTED).json({
+                    await buyCommodity(address,amount,date)
+
+                    //// SEND AN EVENT TO THE OTHER SERVERS 
+                    try{
+                        await runBuyCommodityProducer({address,amount,date})
+                    }
+                    catch(err){
+                        console.log("Error from other servers",err)
+                    }
+                 
+
+                    response.status(responseStatusCode.CREATED).json({
                         status: responseStatus.SUCCESS,
                         message,
                     });
@@ -717,7 +408,7 @@ export default (router: express.Application) => {
     /////////////////////////////////////////// BUY COMMODITY WITH BANK CARD ///////////////////////////////////
 
     router.post(
-        "api/transactions/buy",
+        "api/tx/buy",
         async (request: express.Request, response: express.Response) => {}
     );
 };

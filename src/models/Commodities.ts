@@ -14,13 +14,8 @@ Commodity.init(
         balance: {
             type: DataTypes.INTEGER,
         },
-        userId: {
-            type: DataTypes.INTEGER,
-            unique: true,
-            references: {
-                model: "CommodityUsers",
-                key: "id",
-            },
+        address: {
+            type: DataTypes.STRING,
         },
         createdAt: {
             allowNull: false,

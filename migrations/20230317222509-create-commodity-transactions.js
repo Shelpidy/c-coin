@@ -16,11 +16,11 @@ module.exports = {
                 primaryKey: true,
                 type: Sequelize.INTEGER,
             },
-            transferorAccountNumber: {
+            senderAddress: {
                 type: Sequelize.STRING,
                 allowNull: false,
             },
-            transfereeAccountNumber: {
+            recipientAddress: {
                 type: Sequelize.STRING,
                 allowNull: false,
             },
@@ -28,7 +28,11 @@ module.exports = {
                 type: Sequelize.STRING,
                 allowNull: false,
             },
-            transactionId: {
+            hash: {
+                type: Sequelize.STRING,
+                allowNull: false,
+            },
+            previousTransactionHash: {
                 type: Sequelize.STRING,
                 allowNull: false,
             },

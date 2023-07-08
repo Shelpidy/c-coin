@@ -40,11 +40,11 @@ export default (router: express.Application) => {
     ////////////////////// CHECK BALANCE /////////////////////////
 
     router.get(
-        "/api/commodities/checkbalance/:userId",
+        "/api/commodities/checkbalance/:address",
         async (request: express.Request, response: express.Response) => {
             try {
-                let userId = request.params.userId;
-                let commodity = await Commodity.findOne({ where: { userId } });
+                let address = request.params.address;
+                let commodity = await Commodity.findOne({ where: { address } });
 
                 if (commodity) {
                     response.status(responseStatusCode.OK).json({
@@ -70,11 +70,11 @@ export default (router: express.Application) => {
     /////////////////// GET COMMODITY  //////////////////////////
 
     router.get(
-        "/api/commodities/:userId",
+        "/api/commodities/:address",
         async (request: express.Request, response: express.Response) => {
             try {
-                let userId = request.params.userId;
-                let commodity = await Commodity.findOne({ where: { userId } });
+                let address = request.params.address;
+                let commodity = await Commodity.findOne({ where: { address } });
 
                 if (commodity) {
                     response.status(responseStatusCode.OK).json({
@@ -121,12 +121,12 @@ export default (router: express.Application) => {
     ////////////////////////// DELETE COMMODITY ///////////////////////
 
     router.delete(
-        "/api/commodities/:userId",
+        "/api/commodities/:address",
         async (request: express.Request, response: express.Response) => {
             try {
-                let userId = request.params.userId;
+                let address = request.params.address;
                 let deleteObj = await Commodity.destroy({
-                    where: { userId },
+                    where: { address },
                 });
                 if (deleteObj > 0) {
                     response.status(responseStatusCode.DELETED).json({
@@ -139,7 +139,7 @@ export default (router: express.Application) => {
                         .status(responseStatusCode.UNPROCESSIBLE_ENTITY)
                         .json({
                             status: responseStatus.UNPROCESSED,
-                            message: `Failed to delete user's commodity with userId ${userId}`,
+                            message: `Failed to delete user's commodity with address ${address}`,
                         });
                 }
             } catch (err) {

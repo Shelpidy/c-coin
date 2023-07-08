@@ -21,16 +21,9 @@ module.exports = {
                 allowNull: false,
                 defaultValue: "0",
             },
-            userId: {
-                type: Sequelize.INTEGER,
+            address: {
+                type: Sequelize.STRING,
                 unique: true,
-                references: {
-                    model: "CommodityUsers",
-                    key: "id",
-                },
-                allowNull: false,
-                onDelete: "CASCADE",
-                onUpdate: "CASCADE",
             },
             createdAt: {
                 allowNull: false,
