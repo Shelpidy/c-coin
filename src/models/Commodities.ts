@@ -5,11 +5,11 @@ export class Commodity extends Model {}
 
 Commodity.init(
     {
-        id: {
+        commodityId: {
             allowNull: false,
-            autoIncrement: true,
             primaryKey: true,
-            type: DataTypes.INTEGER,
+            type: DataTypes.UUID,
+            defaultValue:DataTypes.UUIDV4
         },
         balance: {
             type: DataTypes.INTEGER,

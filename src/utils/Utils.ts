@@ -351,7 +351,7 @@ type MakePurchaseParams = {
 //                         responseStatus.UNATHORIZED,
 //                         "You have insufficient amount"
 //                     )
-//                 );
+//                 );   
 //         }
 //         console.log(product?.dataValues);
 //         let price = Number(product?.getDataValue("price"));

@@ -5,11 +5,11 @@ export class CommodityTransaction extends Model {}
 
 CommodityTransaction.init(
     {
-        id: {
+        transactionId: {
             allowNull: false,
-            autoIncrement: true,
             primaryKey: true,
-            type: DataTypes.INTEGER,
+            type: DataTypes.UUID,
+            defaultValue:DataTypes.UUIDV4
         },
         senderAddress: {
             type: DataTypes.STRING,

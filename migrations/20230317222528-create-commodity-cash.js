@@ -10,11 +10,11 @@ module.exports = {
          * await queryInterface.createTable('users', { id: Sequelize.INTEGER });
          */
         await queryInterface.createTable("Commodities", {
-            id: {
+            commodityId: {
                 allowNull: false,
-                autoIncrement: true,
                 primaryKey: true,
-                type: Sequelize.INTEGER,
+                type: Sequelize.UUID,
+                defaultValue:Sequelize.UUIDV4
             },
             balance: {
                 type: Sequelize.INTEGER,

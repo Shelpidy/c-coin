@@ -18,7 +18,7 @@ let notification = new NotificationService();
 
 export default (router: express.Application) => {
     router.post(
-        "/api/tx/sendcommodity",
+        "/tx/sendcommodity",
         async (request: express.Request, response: express.Response) => {
             try {
                 let {
@@ -26,6 +26,11 @@ export default (router: express.Application) => {
                     recipientAddress,
                     amount: _amount,
                 } = request.body;
+                console.log({
+                    senderAddress,
+                    recipientAddress,
+                    amount: _amount,
+                })
                 let amount = Math.abs(_amount);
                 let date = new Date()
                
@@ -36,10 +41,10 @@ export default (router: express.Application) => {
                 let createdAt = new Date();
                 try {
                     let transfereeAcc = await Commodity.findOne({
-                        where: { address: senderAddress },
+                        where: { address: recipientAddress },
                     });
                     let transferorAcc = await Commodity.findOne({
-                        where: { address: recipientAddress },
+                        where: { address: senderAddress },
                     });
                     if (transferorAcc) {
                         let balance: number = Number(
@@ -101,7 +106,7 @@ export default (router: express.Application) => {
                                         .json({
                                             status: responseStatus.SUCCESS,
                                             message: responseMessage,
-                                            data: {
+                                            item: {
                                                 transferorBalance: {
                                                     ...transferorBalance.dataValues,
                                                     balance:
@@ -129,7 +134,7 @@ export default (router: express.Application) => {
                                         )
                                         .json({
                                             status: responseStatus.UNPROCESSED,
-                                            data: err,
+                                            message:String(err),
                                         });
                                 }
                             } else {
@@ -191,7 +196,7 @@ export default (router: express.Application) => {
                                         .json({
                                             status: responseStatus.SUCCESS,
                                             message: responseMessage,
-                                            data: {
+                                            item: {
                                                 transferorBalance: {
                                                     ..._newTransferorBalance.dataValues,
                                                     balance:
@@ -219,7 +224,7 @@ export default (router: express.Application) => {
                                         )
                                         .json({
                                             status: responseStatus.UNPROCESSED,
-                                            data: err,
+                                            message:String(err),
                                         });
                                 }
                             }
@@ -243,14 +248,14 @@ export default (router: express.Application) => {
                     console.log(err);
                     response.status(responseStatusCode.BAD_REQUEST).json({
                         status: responseStatus.ERROR,
-                        data: err,
+                        message:String(err),
                     });
                 }
             } catch (err) {
                 console.log(err);
                 response.status(responseStatusCode.BAD_REQUEST).json({
                     status: responseStatus.ERROR,
-                    data: err,
+                    message:String(err),
                 });
             }
         }
@@ -259,7 +264,7 @@ export default (router: express.Application) => {
     //////////////////////// GET ALL TRANSACTIONS ///////////////////////////////////
 
     router.get(
-        "/api/tx/",
+        "/tx/",
         async (request: express.Request, response: express.Response) => {
             try {
                 let transactions = await CommodityTransaction.findAll();
@@ -280,7 +285,7 @@ export default (router: express.Application) => {
     /////////////////// GET TRANSACTIONS BY ADDRESS //////////////////////////
 
     router.get(
-        "/api/tx/:address",
+        "/tx/:address",
         async (request: express.Request, response: express.Response) => {
             try {
                 let address = request.params.address;
@@ -306,32 +311,34 @@ export default (router: express.Application) => {
     ////////////////////////// DELETE A TRANSACTION HISTORY ///////////////////////
 
     router.delete(
-        "/api/tx/:id",
+        "/tx/:transactionId",
         async (request: express.Request, response: express.Response) => {
             try {
-                let id = request.params.id;
+                let transactionId = request.params.transactionId;
                 let deleteObj = await CommodityTransaction.destroy({
-                    where: { id },
+                    where: { transactionId },
                 });
                 if (deleteObj > 0) {
                     response.status(responseStatusCode.DELETED).json({
                         status: responseStatus.SUCCESS,
                         message: "Successfully deleted a transaction record",
-                        deleteObj: deleteObj,
+                        item:{
+                            rowAffected:deleteObj
+                        }
                     });
                 } else {
                     response
                         .status(responseStatusCode.UNPROCESSIBLE_ENTITY)
                         .json({
                             status: responseStatus.UNPROCESSED,
-                            message: `Failed to delete transaction with Id ${id}`,
+                            message: `Failed to delete transaction with Id ${transactionId}`,
                         });
                 }
             } catch (err) {
                 console.log(err);
                 response.status(responseStatusCode.BAD_REQUEST).json({
                     status: responseStatus.ERROR,
-                    data: err,
+                    message:String(err),
                 });
             }
         }
@@ -342,7 +349,7 @@ export default (router: express.Application) => {
 
 
     router.post(
-        "/api/tx/buycommodity/",
+        "/tx/buycommodity/",
         async (request: express.Request, response: express.Response) => {
             try {
                 let { phoneNumber, address,amount,pinCode} = request.body;
@@ -399,7 +406,7 @@ export default (router: express.Application) => {
                 console.log(err);
                 response.status(responseStatusCode.BAD_REQUEST).json({
                     status: responseStatus.ERROR,
-                    data: err,
+                    message:String(err),
                 });
             }
         }
@@ -408,7 +415,7 @@ export default (router: express.Application) => {
     /////////////////////////////////////////// BUY COMMODITY WITH BANK CARD ///////////////////////////////////
 
     router.post(
-        "api/tx/buy",
+        "/tx/buy",
         async (request: express.Request, response: express.Response) => {}
     );
 };

@@ -4,20 +4,18 @@ import { responseStatus, responseStatusCode } from "../utils/Utils";
 
 export default (router: express.Application) => {
     router.post(
-        "/api/commodities/",
+        "/commodities/",
         async (request: express.Request, response: express.Response) => {
             try {
                 let commodity = request.body;
-                let createdAt = new Date();
                 let createdCommodity = await Commodity.create({
-                    ...commodity,
-                    createdAt,
+                    ...commodity
                 });
                 if (createdCommodity) {
                     response.status(responseStatusCode.CREATED).json({
                         status: responseStatus.SUCCESS,
-                        message: `You have successfully added an amount of ${commodity?.balance} to the user's account ${commodity?.email}`,
-                        data: createdCommodity,
+                        message: `You have successfully added an amount of ${commodity?.balance} to the user's account ${commodity?.address}`,
+                        item: createdCommodity,
                     });
                 } else {
                     response
@@ -31,7 +29,7 @@ export default (router: express.Application) => {
                 console.log(err);
                 response.status(responseStatusCode.BAD_REQUEST).json({
                     status: responseStatus.ERROR,
-                    message: err,
+                    message:String(err),
                 });
             }
         }
@@ -40,7 +38,7 @@ export default (router: express.Application) => {
     ////////////////////// CHECK BALANCE /////////////////////////
 
     router.get(
-        "/api/commodities/checkbalance/:address",
+        "/commodities/checkbalance/:address",
         async (request: express.Request, response: express.Response) => {
             try {
                 let address = request.params.address;
@@ -49,19 +47,25 @@ export default (router: express.Application) => {
                 if (commodity) {
                     response.status(responseStatusCode.OK).json({
                         status: responseStatus.SUCCESS,
-                        balance: commodity?.getDataValue("balance"),
+                        item:{
+                            balance: commodity?.getDataValue("balance"),
+                        }
+                       
                     });
                 } else {
                     response.status(responseStatusCode.OK).json({
                         status: responseStatus.ERROR,
-                        balance: "C 0.00",
+                        item:{
+                            balance: "C 0.00",
+                        }
+                       
                     });
                 }
             } catch (err) {
                 console.log(err);
                 response.status(responseStatusCode.BAD_REQUEST).json({
                     status: responseStatus.ERROR,
-                    message: err,
+                    message:String(err),
                 });
             }
         }
@@ -70,7 +74,7 @@ export default (router: express.Application) => {
     /////////////////// GET COMMODITY  //////////////////////////
 
     router.get(
-        "/api/commodities/:address",
+        "/commodities/:address",
         async (request: express.Request, response: express.Response) => {
             try {
                 let address = request.params.address;
@@ -79,19 +83,19 @@ export default (router: express.Application) => {
                 if (commodity) {
                     response.status(responseStatusCode.OK).json({
                         status: responseStatus.SUCCESS,
-                        data: commodity,
+                        item: commodity,
                     });
                 } else {
                     response.status(responseStatusCode.NOT_FOUND).json({
                         status: responseStatus.ERROR,
-                        data: commodity,
+                        item: commodity,
                     });
                 }
             } catch (err) {
                 console.log(err);
                 response.status(responseStatusCode.BAD_REQUEST).json({
                     status: responseStatus.ERROR,
-                    message: err,
+                    message:String(err),
                 });
             }
         }
@@ -100,19 +104,19 @@ export default (router: express.Application) => {
     //////////////////////// GET ALL COMMODITIES ///////////////////////////////////
 
     router.get(
-        "/api/commodities/",
+        "/commodities/",
         async (request: express.Request, response: express.Response) => {
             try {
                 let commodities = await Commodity.findAll();
                 response.status(responseStatusCode.OK).json({
                     status: responseStatus.SUCCESS,
-                    data: commodities,
+                    item: commodities,
                 });
             } catch (err) {
                 console.log(err);
                 response.status(responseStatusCode.BAD_REQUEST).json({
                     status: responseStatus.ERROR,
-                    message: err,
+                    message:String(err),
                 });
             }
         }
@@ -121,7 +125,7 @@ export default (router: express.Application) => {
     ////////////////////////// DELETE COMMODITY ///////////////////////
 
     router.delete(
-        "/api/commodities/:address",
+        "/commodities/:address",
         async (request: express.Request, response: express.Response) => {
             try {
                 let address = request.params.address;
@@ -132,7 +136,10 @@ export default (router: express.Application) => {
                     response.status(responseStatusCode.DELETED).json({
                         status: responseStatus.SUCCESS,
                         message: "Successfully deleted a user commodity record",
-                        deleteObj: deleteObj,
+                        item:{
+                            deleteObj: deleteObj,
+                        }
+                       
                     });
                 } else {
                     response
@@ -146,7 +153,7 @@ export default (router: express.Application) => {
                 console.log(err);
                 response.status(responseStatusCode.BAD_REQUEST).json({
                     status: responseStatus.ERROR,
-                    data: err,
+                    message:String(err),
                 });
             }
         }

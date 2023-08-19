@@ -1,0 +1,89 @@
+# version: '3'
+
+# services:
+#   zookeeper2:
+#     image: wurstmeister/zookeeper
+#     ports:
+#       - 2182:2181
+#     restart: unless-stopped
+#   kafka2:
+#     image: wurstmeister/kafka
+#     ports:
+#       - 9093:9092
+#     volumes:
+#       - kafka2:/kafka/data
+#     environment:
+#       KAFKA_ADVERTISED_HOST_NAME: 192.168.1.64
+#       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://192.168.1.64:9093
+#       KAFKA_ZOOKEEPER_CONNECT: zookeeper2:2181
+#       KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'false'
+#     restart: unless-stopped
+#     depends_on:
+#      - zookeeper2
+# volumes: 
+#   kafka2:
+#   # kafka2:
+#   #   image: wurstmeister/kafka
+#   #   ports:
+#   #     - 9093:9092
+#   #   volumes:
+#   #     - kafka2:/kafka/data
+#   #   environment:
+#   #     KAFKA_ADVERTISED_HOST_NAME: 192.168.1.64
+#   #     KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://192.168.1.64:9093
+#   #     KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+#   #     KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'false'
+#   #   restart: unless-stopped
+#   #   depends_on:
+#   #     - zookeeper
+#   #     - kafka2
+  
+
+#   # nginx:
+#   #   build:
+#   #     context: ./nginx
+#   #     dockerfile: Dockerfile
+#   #   ports:
+#   #     - 5000:80
+#   #   depends_on:
+#   #     - ledger_server1
+#   #     - ledger_server2
+#   # ledger_server1:
+#   #   container_name: ledger1_container
+#   #   image: ledger
+#   #   environment:
+#   #     PORT: 4000
+#   #     ENV: development
+#   #     API_ACCESS_KEY: mexu
+#   #     DB_HOST: 192.168.1.64
+#   #     DB_PORT: 3306
+#   #     DB_NAME: ledger1
+#   #     DB_USERNAME: root
+#   #     DB_PASSWORD: ''
+#   #     SERVER_ID: s1
+#   #     BROKER_1: 192.168.1.64:9092
+#   #   ports:
+#   #     - 4000:4000
+#   #   depends_on:
+#   #     - kafka
+
+#   # ledger_server2:
+#   #   container_name: ledger2_container
+#   #   image: ledger2
+#   #   environment:
+#   #     PORT: 4001
+#   #     ENV: development
+#   #     API_ACCESS_KEY: mexu
+#   #     DB_HOST: 192.168.1.64
+#   #     DB_PORT: 3306
+#   #     DB_NAME: ledger2
+#   #     DB_USERNAME: root
+#   #     DB_PASSWORD: ''
+#   #     SERVER_ID: s2
+#   #     BROKER_1: 192.168.1.64:9092
+#   #   ports:
+#   #     - 4001:4001
+#   #   depends_on:
+#   #     - kafka
+
+

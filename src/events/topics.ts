@@ -1,39 +1,63 @@
-import { Kafka,Admin } from "kafkajs";
-import dotenv from "dotenv"
+import { Kafka, Admin, KafkaConfig, ITopicConfig } from "kafkajs";
+import dotenv from "dotenv";
 
-dotenv.config()
+dotenv.config();
 
-let BROKER_1 = process.env.BROKER_1 ??''
-let BROKER_2 = process.env.BROKER_2 ??''
-let BROKER_3 = process.env.BROKER_3 ??''
+const BROKER_1 = process.env.BROKER_1 ?? "";
+const BROKER_2 = process.env.BROKER_2 ?? "";
 
-let kafka:Kafka = new Kafka({
-    brokers:[BROKER_1,BROKER_2,BROKER_3],
-    clientId:process.env.SERVER_ID
-})
+const kafkaConfig: KafkaConfig = {
+  brokers: [BROKER_2],
+  clientId: process.env.SERVER_ID,
+};
 
-let admin:Admin = kafka.admin({
-    
-})
+const kafka = new Kafka(kafkaConfig);
+const admin:Admin = kafka.admin();
 
-export async function createTopics(){
-    try{
-        await admin.connect()
-        console.log("Creating topics...")
-        await admin.createTopics({
-            topics:[{
-                topic:"TRANSFER_COMMODITY"
-            },{topic:"BUY_PRODUCT"},{topic:"BUY_COMMODITY"},{topic:"DELETE_TRANSACTION"}]
-        })
-        console.log("Topics created!!")
-    
-       await admin.disconnect()
+async function createTopics() {
+  try {
+    await admin.connect();
+    console.log("Creating topics...");
 
-    }catch(err){
-        console.log(err)
+    const topicConfigs: ITopicConfig[] = [
+      {
+        topic: "TRANSFER_COMMODITY",
+        numPartitions: 3,
+        replicationFactor: 1,
+      },
+      {
+        topic: "BUY_PRODUCT",
+        numPartitions: 3,
+        replicationFactor: 1,
+      },
+      {
+        topic: "BUY_COMMODITY",
+        numPartitions: 3,
+        replicationFactor: 1,
+      },
+      {
+        topic: "DELETE_TRANSACTION",
+        numPartitions: 3,
+        replicationFactor: 1,
+      },
+      {
+        topic: "ADD_TRANSACTION",
+        numPartitions: 3,
+        replicationFactor: 1,
+      },
+    ];
 
-    }
-  
+    await admin.createTopics({
+      topics: topicConfigs,
+    });
+
+    console.log("Topics created!!");
+    await admin.disconnect();
+  } catch (err) {
+    throw err;
+  }
 }
 
-createTopics()
+createTopics().catch(err =>{
+  console.log(err)
+});
